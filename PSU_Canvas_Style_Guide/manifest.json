@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "PSU Canvas Style Guide",
+  "version": "1.1.0",
+  "description": "Insert responsive PSU-styled layouts and assets into the Canvas LMS page editor.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwVKPHoYFxqLGsvrPxR599bCRHY/ATqxDU/JIxCCCXSyGTyIHeLesQ24fiOjiQzOeQEX346VIB0jdyq5a9RzCMeLHfG5ORDeNHk4UQOjoxbEup5XDTd0u4GJ1C+UkvTrxaEaptdTyK8Qe7zKFKa4YdXsb+ywJ1ceUy8oGvlfjjbNlX/cZXr7c4wJUQkKB2xArrVi2fc8/lNu3WA0pujKXhmhTiAJgwrJJf9FDnKhN6+NMSkNBrrNA6OcxIXMzXNz+Re+CfKPF1i7iVjgHVdAddLB8kbjug8SHyxatrSZgyrgv/vvmrUZibYtOlXjdq3OGrjOaHNrn3ACs9VT4S01mWQIDAQAB",
+  "action": {
+    "default_title": "PSU Canvas Style Guide",
+    "default_popup": "popup.html",
+    "default_icon": "assets/icons/icon.png"
+  },
+  "icons": {
+    "16": "assets/icons/icon.png",
+    "32": "assets/icons/icon.png",
+    "48": "assets/icons/icon.png",
+    "128": "assets/icons/icon.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "*://*.canvaslms.com/*",
+    "*://*.instructure.com/*",
+    "*://canvas.psu.edu/*",
+    "https://*.psu.edu/*",
+    "https://aistudio.psu.edu/*",
+    "https://api.openai.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.instructure.com/*",
+        "*://*.canvaslms.com/*",
+        "*://canvas.psu.edu/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/icons/collections/**/*.svg",
+        "assets/icons/collections/**/*.png",
+        "assets/icons/icon.png",
+        "icon-library.js"
+      ],
+      "matches": [
+        "*://*.instructure.com/*",
+        "*://*.canvaslms.com/*",
+        "*://canvas.psu.edu/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CEI Style Guide</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="my-stuff.css">
+</head>
+<body>
+
+  <header class="psu-header">
+    <img src="assets/icons/icon.png" alt="" class="psu-logo">
+    <div class="header-copy">
+      <h1>CEI Style Guide</h1>
+      <p>Open your editor, select, and customize content.</p>
+    </div>
+    
+    <div class="services-dropdown cei-header-dropdown">
+      <button class="services-button cei-header-dropdown-button" id="shortcutsToggle" type="button" aria-expanded="false" aria-controls="shortcutsMenu">
+        Shortcuts <span class="services-caret" aria-hidden="true">⌄</span>
+      </button>
+      <ul class="cei-header-dropdown-menu" id="shortcutsMenu" role="menu" aria-label="Shortcuts menu">
+        <li><a target="_blank" href="https://airtable.com/app0ujxqVeUOd6eB0/pagNFUeE1G8aamxMf?6lDdc=reccH5HAycJQ28OFy" role="menuitem">CEI World</a></li>
+        <li><a target="_blank" href="https://sites.psu.edu/cteinotebook/2024/02/28/wc-course-setup-process/" role="menuitem">WC Setup Process</a></li>
+        <li><a target="_blank" href="https://docs.google.com/spreadsheets/d/1nCNTCGO_b0R3dbLeQszl4m8_EbbC5ZGh4wGPUrV-1eY/edit?gid=0#gid=0" role="menuitem">Academic Calendar</a></li>
+        <li><a target="_blank" href="https://behrendwc.bd.psu.edu/" role="menuitem">WC Syllabi</a></li>
+        <li><a target="_blank" href="https://psu.instructure.com/courses/2040738" role="menuitem">CEI Sample Course</a></li>
+        <li><a target="_blank" href="https://psu.mediaspace.kaltura.com/my-media" role="menuitem">Mediaspace</a></li>
+      </ul>
+    </div>
+
+    <div class="support-dropdown cei-header-dropdown">
+      <button class="support-button cei-header-dropdown-button" id="supportToggle" type="button" aria-expanded="false" aria-controls="supportMenu">
+        Support <span class="support-caret" aria-hidden="true">⌄</span>
+      </button>
+      <ul class="cei-header-dropdown-menu" id="supportMenu" role="menu" aria-label="Support menu">
+        <li><a target="_blank" href="https://pennstate.service-now.com/sp?id=get_it_help" role="menuitem">Open an IT Support Ticket</a></li>
+        <li><a target="_blank" href="https://pennstate.service-now.com/sp?id=services_status" role="menuitem">Service Status</a></li>
+        <li><a target="_blank" href="https://pennstate.service-now.com/sp/sp?id=kb_home" role="menuitem">Knowledge Base</a></li>
+      </ul>
+    </div>
+
+  </header>
+
+  <main>
+    <div class="panel-controls cei-tab-navigation" role="tablist" aria-label="Style guide panels">
+      <button class="panel-tab ai-tab" type="button" role="tab" aria-selected="false" data-panel="5">AI</button>
+      <button class="panel-tab my-stuff-tab" type="button" role="tab" aria-selected="false" data-panel="6">My Stuff</button>
+      <button class="panel-tab is-active" type="button" role="tab" aria-selected="false" data-panel="1">Layouts</button>
+      <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="2">Elements</button>
+      <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="3">Asset Library</button>
+      <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="0">Search</button>
+    </div>
+
+    <div id="status" class="status visually-hidden" role="status" aria-live="polite"></div>
+
+    <div class="slider-shell" id="sliderShell">
+      <div class="panel-slider" id="panelSlider">
+        <section class="style-panel recommender-panel" aria-label="Canvas recommender">
+          <div class="ai-layout-recommender">
+              <label for="aiLayoutNeed">Search for layouts and elements</label>
+              <textarea id="aiLayoutNeed" rows="3" placeholder="Describe what you want to build in Canvas. Example: I need a module intro with objectives, a callout box, and a knowledge check."></textarea>
+              <button id="aiRecommendLayoutButton" type="button">Recommend Layouts & Elements</button>
+              <div id="aiLayoutRecommendation" class="ai-layout-recommendation" aria-live="polite"></div>
+            </div>
+        </section>
+        <section class="style-panel" aria-label="Layout examples">
+          <div class="panel-search">
+            <label for="layoutsSearch">Search</label>
+            <input id="layoutsSearch" class="card-search" type="search" placeholder="Search layouts..." data-target="layoutsPanel">
+          </div>
+
+          <div class="layout-category-control">
+            <label for="layoutCategory">Layouts</label>
+            <select id="layoutCategory" class="layout-category-select" aria-label="Choose layout category">
+              <option value="all" selected>All</option>
+              <option value="full-pages">Full Pages</option>
+              <option value="sections">Sections</option>
+            </select>
+          </div>
+          <div id="layoutMainView" class="layout-main-view">
+            <div class="recent-row" id="recentLayoutsRow" hidden>
+              <span class="recent-row-label">Recently used</span>
+              <div class="recent-row-chips" id="recentLayoutsChips"></div>
+            </div>
+            <div class="layout-grid" id="layoutsPanel"></div>
+          </div>
+
+          <div id="layoutOptionsView" class="layout-options-view" hidden>
+            <button id="layoutOptionsBack" class="layout-back-button" type="button">← Back to layouts</button>
+
+            <div class="layout-options-card">
+              <div>
+                <h2 id="layoutOptionsTitle">Layout Options</h2>
+                <p id="layoutOptionsDesc">Customize this layout before inserting it into Canvas.</p>
+              </div>
+
+              <div class="layout-options-controls">
+                <div class="layout-option-group layout-prefill-options" id="layoutPrefillOptions" hidden>
+                  <span class="layout-prefill-heading">Fill in your details (optional)</span>
+                  <div id="layoutPrefillFields"></div>
+                </div>
+
+                <div class="layout-option-group layout-border-options">
+                  <label for="layoutBorderSelect">Card borders</label>
+                  <select id="layoutBorderSelect">
+                    <option value="no-borders" selected>No borders</option>
+                    <option value="borders">Borders</option>
+                  </select>
+                </div>
+
+                <details class="layout-option-group color-options-toggle layout-color-options">
+                  <summary>
+                    <span>Color options</span>
+                    <span class="color-toggle-value" aria-hidden="true">
+                      <span class="color-toggle-chip" style="background:#001E44;"></span>
+                      <span class="color-toggle-hex">#001E44</span>
+                    </span>
+                  </summary>
+
+                  <div class="color-toggle-panel">
+                  <div class="layout-color-section">
+                    <h3>Primary</h3>
+                    <div class="layout-swatch-row" id="layoutPrimarySwatches">
+                      <button type="button" class="layout-swatch is-selected" data-color="#001E44" style="background:#001E44;" aria-label="Nittany Navy" title="Nittany Navy #001E44"></button>
+                      <button type="button" class="layout-swatch" data-color="#1E407C" style="background:#1E407C;" aria-label="Beaver Blue" title="Beaver Blue #1E407C"></button>
+                      <button type="button" class="layout-swatch" data-color="#96BEE6" style="background:#96BEE6;" aria-label="Pugh Blue" title="Pugh Blue #96BEE6"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Canvas</h3>
+                    <div class="layout-swatch-row" id="layoutCanvasSwatches">
+                      <button type="button" class="layout-swatch" data-color="#1F4373" style="background:#1F4373;" aria-label="Canvas Blue" title="Canvas Blue #1F4373"></button>
+                      <button type="button" class="layout-swatch" data-color="#394D59" style="background:#394D59;" aria-label="Canvas Slate" title="Canvas Slate #394D59"></button>
+                      <button type="button" class="layout-swatch" data-color="#038C33" style="background:#038C33;" aria-label="Canvas Green" title="Canvas Green #038C33"></button>
+                      <button type="button" class="layout-swatch" data-color="#7ABF8C" style="background:#7ABF8C;" aria-label="Canvas Light Green" title="Canvas Light Green #7ABF8C"></button>
+                      <button type="button" class="layout-swatch light-swatch" data-color="#F2F2F2" style="background:#F2F2F2;" aria-label="Canvas Light Gray" title="Canvas Light Gray #F2F2F2"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Accent</h3>
+                    <div class="layout-swatch-row" id="layoutAccentSwatches">
+                      <button type="button" class="layout-swatch" data-color="#A2AAAD" style="background:#A2AAAD;" aria-label="PA Limestone" title="PA Limestone #A2AAAD"></button>
+                      <button type="button" class="layout-swatch" data-color="#314D64" style="background:#314D64;" aria-label="PA Slate" title="PA Slate #314D64"></button>
+                      <button type="button" class="layout-swatch" data-color="#4A7729" style="background:#4A7729;" aria-label="Penn's Forest" title="Penn's Forest #4A7729"></button>
+                      <button type="button" class="layout-swatch" data-color="#262626" style="background:#262626;" aria-label="Old Coaly" title="Old Coaly #262626"></button>
+                      <button type="button" class="layout-swatch" data-color="#009CDE" style="background:#009CDE;" aria-label="PA Sky" title="PA Sky #009CDE"></button>
+                      <button type="button" class="layout-swatch" data-color="#3EA39E" style="background:#3EA39E;" aria-label="PA Creek" title="PA Creek #3EA39E"></button>
+                      <button type="button" class="layout-swatch" data-color="#FFD100" style="background:#FFD100;" aria-label="Bright Keystone" title="Bright Keystone #FFD100"></button>
+                      <button type="button" class="layout-swatch" data-color="#E98300" style="background:#E98300;" aria-label="Invent Orange" title="Invent Orange #E98300"></button>
+                      <button type="button" class="layout-swatch" data-color="#F2665E" style="background:#F2665E;" aria-label="Dawn of Discovery" title="Dawn of Discovery #F2665E"></button>
+                      <button type="button" class="layout-swatch" data-color="#491D70" style="background:#491D70;" aria-label="Perpetual Wonder" title="Perpetual Wonder #491D70"></button>
+                      <button type="button" class="layout-swatch" data-color="#008755" style="background:#008755;" aria-label="Green Opportunity" title="Green Opportunity #008755"></button>
+                      <button type="button" class="layout-swatch" data-color="#99CC00" style="background:#99CC00;" aria-label="Future's Calling" title="Future's Calling #99CC00"></button>
+                      <button type="button" class="layout-swatch" data-color="#000321" style="background:#000321;" aria-label="PA Potential" title="PA Potential #000321"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Background</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="layout-swatch light-swatch" data-color="#F7F9FB" style="background:#F7F9FB;" aria-label="Blue BG" title="Blue BG #F7F9FB"></button>
+                      <button type="button" class="layout-swatch light-swatch" data-color="#EDF7ED" style="background:#EDF7ED;" aria-label="Green BG" title="Green BG #EDF7ED"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section layout-custom-color-section">
+                    <h3>Custom</h3>
+                    <label for="layoutCustomColorHex">HEX color</label>
+                    <div class="layout-custom-color-row">
+                      <input id="layoutCustomColorHex" type="text" value="#001E44" placeholder="#001E44" aria-label="Custom HEX color">
+                      <input id="layoutCustomColor" type="color" value="#001E44" aria-label="Choose custom color">
+                    </div>
+                  </div>
+                  </div>
+                </details>
+
+              </div>
+
+              <div class="layout-preview-wrap">
+                <span class="layout-preview-label">Preview</span>
+                <iframe id="layoutPreviewFrame" class="layout-preview-frame" sandbox="allow-same-origin" title="Layout preview"></iframe>
+              </div>
+
+              <div class="options-insert-row">
+                <button id="layoutInsertButton" class="layout-insert-button" type="button">Insert Layout</button>
+                <button id="layoutCopyHtmlButton" class="options-copy-button" type="button">Copy HTML</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="style-panel" aria-label="Element examples">
+          <div id="elementMainView" class="element-main-view">
+            <div class="panel-search">
+              <label for="interactiveSearch">Search elements</label>
+              <input id="interactiveSearch" class="card-search" type="search" placeholder="Search elements..." data-target="interactivePanel">
+            </div>
+
+            <div class="recent-row" id="recentElementsRow" hidden>
+              <span class="recent-row-label">Recently used</span>
+              <div class="recent-row-chips" id="recentElementsChips"></div>
+            </div>
+            <div class="layout-grid" id="interactivePanel"></div>
+          </div>
+
+          <div id="elementOptionsView" class="element-options-view" hidden>
+            <button id="elementOptionsBack" class="layout-back-button" type="button">← Back to elements</button>
+
+            <div class="layout-options-card element-options-card">
+              <div>
+                <h2 id="elementOptionsTitle">Element Options</h2>
+                <p id="elementOptionsDesc">Customize this element before inserting it into Canvas.</p>
+              </div>
+
+              <div class="layout-options-controls element-options-controls">
+                <details class="layout-option-group color-options-toggle element-color-options">
+                  <summary>
+                    <span>Color options</span>
+                    <span class="color-toggle-value" aria-hidden="true">
+                      <span class="color-toggle-chip" style="background:#001E44;"></span>
+                      <span class="color-toggle-hex">#001E44</span>
+                    </span>
+                  </summary>
+
+                  <div class="color-toggle-panel">
+                  <div class="layout-color-section">
+                    <h3>Primary</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="element-swatch is-selected" data-color="#001E44" style="background:#001E44;" aria-label="Nittany Navy"></button>
+                      <button type="button" class="element-swatch" data-color="#1E407C" style="background:#1E407C;" aria-label="Beaver Blue"></button>
+                      <button type="button" class="element-swatch" data-color="#96BEE6" style="background:#96BEE6;" aria-label="Pugh Blue"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Canvas</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="element-swatch" data-color="#1F4373" style="background:#1F4373;" aria-label="Canvas Blue"></button>
+                      <button type="button" class="element-swatch" data-color="#394D59" style="background:#394D59;" aria-label="Canvas Slate"></button>
+                      <button type="button" class="element-swatch" data-color="#038C33" style="background:#038C33;" aria-label="Canvas Green"></button>
+                      <button type="button" class="element-swatch" data-color="#7ABF8C" style="background:#7ABF8C;" aria-label="Canvas Light Green"></button>
+                      <button type="button" class="element-swatch light-swatch" data-color="#F2F2F2" style="background:#F2F2F2;" aria-label="Canvas Light Gray"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Accent</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="element-swatch" data-color="#A2AAAD" style="background:#A2AAAD;" aria-label="PA Limestone"></button>
+                      <button type="button" class="element-swatch" data-color="#314D64" style="background:#314D64;" aria-label="PA Slate"></button>
+                      <button type="button" class="element-swatch" data-color="#4A7729" style="background:#4A7729;" aria-label="Penn's Forest"></button>
+                      <button type="button" class="element-swatch" data-color="#262626" style="background:#262626;" aria-label="Old Coaly"></button>
+                      <button type="button" class="element-swatch" data-color="#009CDE" style="background:#009CDE;" aria-label="PA Sky"></button>
+                      <button type="button" class="element-swatch" data-color="#3EA39E" style="background:#3EA39E;" aria-label="PA Creek"></button>
+                      <button type="button" class="element-swatch" data-color="#FFD100" style="background:#FFD100;" aria-label="Bright Keystone"></button>
+                      <button type="button" class="element-swatch" data-color="#E98300" style="background:#E98300;" aria-label="Invent Orange"></button>
+                      <button type="button" class="element-swatch" data-color="#F2665E" style="background:#F2665E;" aria-label="Dawn of Discovery"></button>
+                      <button type="button" class="element-swatch" data-color="#491D70" style="background:#491D70;" aria-label="Perpetual Wonder"></button>
+                      <button type="button" class="element-swatch" data-color="#008755" style="background:#008755;" aria-label="Green Opportunity"></button>
+                      <button type="button" class="element-swatch" data-color="#99CC00" style="background:#99CC00;" aria-label="Future's Calling"></button>
+                      <button type="button" class="element-swatch" data-color="#000321" style="background:#000321;" aria-label="PA Potential"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Background</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="element-swatch light-swatch" data-color="#F7F9FB" style="background:#F7F9FB;" aria-label="Blue BG"></button>
+                      <button type="button" class="element-swatch light-swatch" data-color="#EDF7ED" style="background:#EDF7ED;" aria-label="Green BG"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section layout-custom-color-section">
+                    <h3>Custom</h3>
+                    <label for="elementCustomColorHex">HEX color</label>
+                    <div class="layout-custom-color-row">
+                      <input id="elementCustomColorHex" type="text" value="#001E44" placeholder="#001E44" aria-label="Custom element HEX color">
+                      <input id="elementCustomColor" type="color" value="#001E44" aria-label="Choose custom element color">
+                    </div>
+                  </div>
+                  </div>
+                </details>
+
+                <div class="layout-option-group concept-checker-embed-options" id="conceptCheckerEmbedOptions" hidden>
+                  <label for="conceptCheckerEmbed">Interactive Embed <a class="h5p-portal-link" href="https://behrend-elearn.psu.edu" target="_blank" rel="noopener noreferrer">(H5P Portal)</a></label>
+                  <textarea id="conceptCheckerEmbed" rows="5" placeholder="Paste the iframe embed code here" aria-label="Interactive embed HTML"></textarea>
+                </div>
+
+                <div class="layout-option-group video-transcript-options" id="videoTranscriptOptions" hidden>
+                  <div class="show-hide-style-row">
+                    <div>
+                      <label for="transcriptStyleSelect">Toggle style</label>
+                      <select id="transcriptStyleSelect">
+                        <option value="link" selected>Link</option>
+                        <option value="button">Button</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="transcriptAlignSelect">Alignment</label>
+                      <select id="transcriptAlignSelect">
+                        <option value="left">Left</option>
+                        <option value="center" selected>Center</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <label for="videoTranscriptIframe"><span id="transcriptEmbedLabel">Iframe Embed</span> <a id="transcriptEmbedLink" class="h5p-portal-link" href="https://psu.mediaspace.kaltura.com" target="_blank" rel="noopener noreferrer">(Kaltura)</a></label>
+                  <textarea id="videoTranscriptIframe" rows="5" placeholder="Paste the iframe embed code here" aria-label="Iframe embed HTML"></textarea>
+
+                  <label for="videoTranscriptSummary" id="transcriptSummaryLabel">Transcript link text</label>
+                  <input id="videoTranscriptSummary" type="text" value="Click to view Video Transcript" placeholder="Click to view Video Transcript">
+
+                  <label for="videoTranscriptText" id="transcriptTextLabel">Video transcript</label>
+                  <textarea id="videoTranscriptText" rows="8" placeholder="Paste video transcript here" aria-label="Video transcript text"></textarea>
+                </div>
+
+                <div class="layout-option-group show-hide-options" id="showHideOptions" hidden>
+                  <div class="show-hide-style-row">
+                    <div>
+                      <label for="showHideStyleSelect">Toggle style</label>
+                      <select id="showHideStyleSelect">
+                        <option value="link" selected>Link</option>
+                        <option value="button">Button</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="showHideAlignSelect">Alignment</label>
+                      <select id="showHideAlignSelect">
+                        <option value="left" selected>Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <label for="showHideSummary">Show/hide toggle text</label>
+                  <input id="showHideSummary" type="text" value="Add text for a show/hide element" placeholder="Add text for a show/hide element">
+
+                  <label for="showHideText">Show/hide content</label>
+                  <textarea id="showHideText" rows="8" placeholder="Add text or media..." aria-label="Show/hide text or media"></textarea>
+                </div>
+
+                <div class="layout-option-group element-builder-options" id="elementBuilderOptions">
+                  <label for="elementBuilderCount">Number of items</label>
+                  <select id="elementBuilderCount">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                  </select>
+                  <div id="elementBuilderFields" class="element-builder-fields"></div>
+                </div>
+
+                <div class="layout-option-group table-options" id="tableOptions" hidden>
+                  <label for="tableCaptionInput">Table caption</label>
+                  <input id="tableCaptionInput" type="text" placeholder="Insert caption here" aria-describedby="tableCaptionHelp">
+                  <p id="tableCaptionHelp" class="asset-field-help">Describes the table for screen reader users. Always include one.</p>
+
+                  <div class="show-hide-style-row">
+                    <div>
+                      <label for="tableColumnsSelect">Columns</label>
+                      <select id="tableColumnsSelect">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="tableRowsSelect">Body rows</label>
+                      <select id="tableRowsSelect">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <label for="tableHeaderScopeSelect">Headers</label>
+                  <select id="tableHeaderScopeSelect">
+                    <option value="row" selected>Top row</option>
+                    <option value="column">First column</option>
+                    <option value="both">Top row and first column</option>
+                  </select>
+
+                  <label for="tableHeaderLabels">Column headings</label>
+                  <textarea id="tableHeaderLabels" rows="3" placeholder="Column 1&#10;Column 2&#10;Column 3" aria-describedby="tableHeaderLabelsHelp"></textarea>
+                  <p id="tableHeaderLabelsHelp" class="asset-field-help">One heading per line. Blank lines fall back to Column 1, Column 2, and so on.</p>
+                </div>
+
+                <div class="layout-option-group callout-box-options" id="calloutBoxOptions" hidden>
+                  <label for="calloutBoxStyleSelect">Box options</label>
+                  <select id="calloutBoxStyleSelect">
+                    <option value="left-line" selected>Left line</option>
+                    <option value="full-background">Full background</option>
+                  </select>
+
+                  <label for="calloutTitleInput">Callout title</label>
+                  <input id="calloutTitleInput" type="text" value="Callout Box" placeholder="Callout Box">
+
+                  <label for="calloutBodyInput">Callout content</label>
+                  <textarea id="calloutBodyInput" rows="3" placeholder="Add or paste callout content here."></textarea>
+                </div>
+              </div>
+
+              <div class="options-insert-row">
+                <button id="elementInsertButton" class="layout-insert-button" type="button">Insert Element</button>
+                <button id="elementCopyHtmlButton" class="options-copy-button" type="button">Copy HTML</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="style-panel" aria-label="Asset Library examples">
+          <div class="asset-library-builder">
+            <p class="asset-builder-desc">Choose color, then insert</p>
+
+            <div class="recent-row" id="recentAssetsRow" hidden>
+              <span class="recent-row-label">Recently used</span>
+              <div class="recent-row-chips" id="recentAssetsChips"></div>
+            </div>
+
+            <div class="layout-option-group asset-kind-options">
+              <span class="asset-kind-label" id="assetKindLabel">Asset type</span>
+              <div class="asset-kind-buttons" role="radiogroup" aria-labelledby="assetKindLabel">
+                <button class="asset-kind-button is-selected" type="button" data-asset-kind="icons" role="radio" aria-checked="true">Icons</button>
+                <button class="asset-kind-button" type="button" data-asset-kind="buttons" role="radio" aria-checked="false">Buttons</button>
+              </div>
+            </div>
+
+            <div class="layout-option-group asset-customization-panel asset-button-options" id="assetButtonOptions" hidden>
+              <span class="asset-button-style-label" id="assetButtonStyleLabel">Button style</span>
+              <div class="asset-button-style-buttons" role="radiogroup" aria-labelledby="assetButtonStyleLabel">
+                <button class="asset-button-style-button is-selected" type="button" data-button-style="solid" role="radio" aria-checked="true">Solid</button>
+                <button class="asset-button-style-button" type="button" data-button-style="outline" role="radio" aria-checked="false">Outline</button>
+              </div>
+
+              <details class="layout-option-group color-options-toggle asset-button-color-options">
+                <summary>
+                  <span>Color options</span>
+                  <span class="color-toggle-value" aria-hidden="true">
+                    <span class="color-toggle-chip" style="background:#1E407C;"></span>
+                    <span class="color-toggle-hex">#1E407C</span>
+                  </span>
+                </summary>
+
+                <div class="color-toggle-panel">
+                  <div class="layout-color-section">
+                    <h3>Primary</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="asset-button-swatch is-selected" data-color="#1E407C" style="background:#1E407C;" aria-label="Beaver Blue"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#001E44" style="background:#001E44;" aria-label="Nittany Navy"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#96BEE6" style="background:#96BEE6;" aria-label="Pugh Blue"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Canvas</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="asset-button-swatch" data-color="#1F4373" style="background:#1F4373;" aria-label="Canvas Blue"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#394D59" style="background:#394D59;" aria-label="Canvas Slate"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#038C33" style="background:#038C33;" aria-label="Canvas Green"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#7ABF8C" style="background:#7ABF8C;" aria-label="Canvas Light Green"></button>
+                      <button type="button" class="asset-button-swatch light-swatch" data-color="#F2F2F2" style="background:#F2F2F2;" aria-label="Canvas Light Gray"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Accent</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="asset-button-swatch" data-color="#A2AAAD" style="background:#A2AAAD;" aria-label="PA Limestone"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#314D64" style="background:#314D64;" aria-label="PA Slate"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#4A7729" style="background:#4A7729;" aria-label="Penn's Forest"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#262626" style="background:#262626;" aria-label="Old Coaly"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#009CDE" style="background:#009CDE;" aria-label="PA Sky"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#3EA39E" style="background:#3EA39E;" aria-label="PA Creek"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#FFD100" style="background:#FFD100;" aria-label="Bright Keystone"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#E98300" style="background:#E98300;" aria-label="Invent Orange"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#F2665E" style="background:#F2665E;" aria-label="Dawn of Discovery"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#491D70" style="background:#491D70;" aria-label="Perpetual Wonder"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#008755" style="background:#008755;" aria-label="Green Opportunity"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#99CC00" style="background:#99CC00;" aria-label="Future's Calling"></button>
+                      <button type="button" class="asset-button-swatch" data-color="#000321" style="background:#000321;" aria-label="PA Potential"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section">
+                    <h3>Background</h3>
+                    <div class="layout-swatch-row">
+                      <button type="button" class="asset-button-swatch light-swatch" data-color="#F7F9FB" style="background:#F7F9FB;" aria-label="Blue BG"></button>
+                      <button type="button" class="asset-button-swatch light-swatch" data-color="#EDF7ED" style="background:#EDF7ED;" aria-label="Green BG"></button>
+                    </div>
+                  </div>
+
+                  <div class="layout-color-section layout-custom-color-section">
+                    <h3>Custom</h3>
+                    <label for="assetButtonCustomColorHex">HEX color</label>
+                    <div class="layout-custom-color-row">
+                      <input id="assetButtonCustomColorHex" type="text" value="#1E407C" placeholder="#1E407C" aria-label="Custom button HEX color">
+                      <input id="assetButtonCustomColor" type="color" value="#1E407C" aria-label="Choose custom button color">
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <div class="asset-button-row">
+                <div>
+                  <label for="assetButtonSizeSelect">Button size</label>
+                  <select id="assetButtonSizeSelect">
+                    <option value="small">Small</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="large">Large</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="assetButtonAlignSelect">Alignment</label>
+                  <select id="assetButtonAlignSelect">
+                    <option value="left" selected>Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+              </div>
+
+              <label for="assetButtonText">Button text</label>
+              <input id="assetButtonText" type="text" value="Button Text" placeholder="Button text" aria-describedby="assetButtonTextHelp">
+              <p id="assetButtonTextHelp" class="asset-field-help">After inserting, use the Canvas editor to link the button to internal and external pages, files, etc.</p>
+            </div>
+
+            <div class="layout-option-group asset-customization-panel asset-icon-options" id="assetIconOptions">
+              <label for="assetIconCollectionSelect">Icon collection</label>
+              <select id="assetIconCollectionSelect">
+                <option value="general" selected>General</option>
+                <option value="icon-banners">Icon Banners</option>
+                <option value="fill-icons">Fill Icons</option>
+              </select>
+
+              <label for="assetIconVariantSelect">Color options</label>
+              <select id="assetIconVariantSelect">
+                <option value="dark" selected>Dark</option>
+                <option value="light">Light</option>
+              </select>
+
+              <div class="asset-icon-category" id="assetIconCategoryWrap" hidden>
+                <label for="assetIconCategorySelect">Category</label>
+                <select id="assetIconCategorySelect">
+                  <option value="" selected>All categories</option>
+                </select>
+              </div>
+
+              <div class="asset-icon-search">
+                <label for="assetIconSearch">Search icons</label>
+                <input id="assetIconSearch" type="search" placeholder="Search icons...">
+              </div>
+
+              <div class="asset-icon-grid-heading">
+                <span>Select icon</span>
+                <span id="assetIconGridCount" aria-live="polite"></span>
+              </div>
+              <div id="assetIconGrid" class="asset-icon-grid" role="radiogroup" aria-label="Choose an icon"></div>
+              <select id="assetIconSelect" hidden aria-hidden="true" tabindex="-1"></select>
+            </div>
+
+            <button id="assetInsertButton" class="layout-insert-button" type="button">Insert Asset</button>
+          </div>
+        </section>
+        <section class="style-panel" aria-label="AI Studio prompt library">
+          <div class="aistudio-panel">
+            <div class="aistudio-hero">
+              <div class="aistudio-logo" aria-hidden="true">AI</div>
+              <div>
+                <h2>AI Studio Prompt Library</h2>
+                <p>Use these prompt starters with Penn State AI Studio to quickly create Canvas-ready course content, layout ideas, activities, and accessibility improvements.</p>
+              </div>
+            </div>
+
+            <a class="aistudio-open" href="https://aistudio.psu.edu/chat/onechat" target="_blank" rel="noopener noreferrer">Open AI Studio</a>
+
+            <div class="ai-category-control">
+              <label for="aiPromptCategory">Prompt category</label>
+              <select id="aiPromptCategory" class="ai-category-select">
+                <option value="all">All Categories</option>
+                <option value="Course Design">Course Design</option>
+                <option value="Module Design">Module Design</option>
+                <option value="Assessment">Assessment</option>
+                <option value="Accessibility">Accessibility</option>
+                <option value="Canvas Pages">Canvas Pages</option>
+                <option value="Multimedia">Multimedia</option>
+              </select>
+            </div>
+
+            <div class="panel-search">
+              <label for="aiPromptSearch">Search AI prompts</label>
+              <input id="aiPromptSearch" class="card-search" type="search" placeholder="Search AI prompt templates..." data-target="aiStudioPromptGrid">
+            </div>
+
+            <div class="aistudio-grid" id="aiStudioPromptGrid"></div>
+          </div>
+        </section>
+        <section class="style-panel" aria-label="AI page assistant">
+          <div class="ai-assistant-panel">
+
+            <div class="ai-connect-card" id="aiConnectCard">
+              <div class="ai-connect-header">
+                <h2>AI Page Assistant</h2>
+                <span class="ai-connection-badge" id="aiConnectionBadge">Not connected</span>
+              </div>
+              <p class="ai-connect-desc">Connect your ChatGPT account (OpenAI API key) to analyze the open Canvas page, get pedagogical recommendations, and generate a modern PSU-styled redesign — or use Penn State AI Studio below.</p>
+
+              <details class="layout-option-group ai-settings-toggle" id="aiSettingsToggle" open>
+                <summary><span>ChatGPT account</span><span class="ai-settings-provider" id="aiSettingsProviderLabel"></span></summary>
+                <div class="ai-settings-body">
+                  <label for="aiApiKey" id="aiApiKeyLabel">OpenAI API key</label>
+                  <div class="ai-key-row">
+                    <input id="aiApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-...">
+                    <button id="aiConnectButton" class="ai-connect-button" type="button">Connect</button>
+                  </div>
+                  <p class="ai-key-help" id="aiKeyHelp">
+                    Get a key at <a href="https://platform.openai.com/api-keys" id="aiKeyLink" target="_blank" rel="noopener noreferrer">platform.openai.com</a>.
+                    Your key is stored only on this computer and sent only to OpenAI.
+                  </p>
+
+                  <label for="aiModel">Model</label>
+                  <input id="aiModel" type="text" autocomplete="off" spellcheck="false" placeholder="gpt-4o">
+
+                  <button id="aiDisconnectButton" class="ai-disconnect-button" type="button" hidden>Remove key</button>
+                </div>
+              </details>
+
+              <div class="ai-actions-row">
+                <button id="aiAnalyzeButton" class="layout-insert-button ai-analyze-button" type="button">Analyze Page &amp; Generate Redesign</button>
+              </div>
+              <p id="aiStatusMessage" class="ai-status-message" role="status" aria-live="polite" hidden></p>
+              <p class="ai-fallback-note">
+                No API key? <a href="#" id="aiStudioFallbackLink">Copy this page into an AI Studio prompt</a> and use
+                <a href="https://aistudio.psu.edu/chat/onechat" target="_blank" rel="noopener noreferrer">Penn State AI Studio</a> instead.
+              </p>
+            </div>
+
+            <div class="ai-results" id="aiResults" hidden>
+              <h2 class="ai-results-heading">Recommendations</h2>
+              <ul class="ai-recommendation-list" id="aiRecommendationList"></ul>
+
+              <h2 class="ai-results-heading">Modern Layout Preview</h2>
+              <iframe id="aiPreviewFrame" class="ai-preview-frame" sandbox="allow-same-origin" title="AI generated layout preview"></iframe>
+
+              <div class="ai-insert-row">
+                <button id="aiInsertCursorButton" class="layout-insert-button" type="button">Insert at Cursor</button>
+                <button id="aiReplacePageButton" class="layout-insert-button ai-replace-button" type="button">Replace Page Content</button>
+                <button id="aiCopyHtmlButton" class="ai-copy-button" type="button">Copy HTML</button>
+              </div>
+              <p class="ai-review-note">Review AI output before inserting. Check facts, links, and alt text.</p>
+            </div>
+
+          </div>
+        </section>
+        <section class="style-panel my-stuff-panel" aria-label="My Stuff">
+          <div id="myStuffMainView">
+            <div class="ms-toolbar">
+              <button id="myStuffAddButton" class="layout-insert-button" type="button">+ Add Page or Element</button>
+            </div>
+            <div class="ms-folder-status" id="myStuffFolderStatus">
+              <span id="myStuffFolderText">Checking storage…</span>
+              <button id="myStuffFolderButton" class="ms-link-button" type="button">Folder settings</button>
+            </div>
+            <div class="ms-filters">
+              <div class="panel-search">
+                <label for="myStuffSearch">Search</label>
+                <input id="myStuffSearch" class="card-search" type="search" placeholder="Search my stuff...">
+              </div>
+              <div class="layout-category-control">
+                <label for="myStuffTypeFilter">Show</label>
+                <select id="myStuffTypeFilter" class="layout-category-select">
+                  <option value="all" selected>All</option>
+                  <option value="page">Pages</option>
+                  <option value="element">Elements</option>
+                </select>
+              </div>
+            </div>
+            <div class="layout-grid" id="myStuffGrid"></div>
+            <div class="ms-empty" id="myStuffEmpty" hidden>
+              <h2>Nothing saved yet</h2>
+              <p>Save your own HTML (with inline CSS) as a page or element, then insert it into Canvas like any other layout.</p>
+              <button id="myStuffEmptyAddButton" class="layout-insert-button" type="button">+ Add your first item</button>
+            </div>
+          </div>
+
+          <div id="myStuffAddView" class="layout-options-view" hidden>
+            <button id="myStuffAddBack" class="layout-back-button" type="button">← Back to My Stuff</button>
+            <div class="layout-options-card">
+              <h2 id="myStuffFormHeading">Add to My Stuff</h2>
+              <p id="myStuffFormIntro">Only you can see these. They're saved in your Chrome profile (and your my-stuff folder, if connected).</p>
+              <form id="myStuffForm" novalidate>
+                <div class="ms-form-row">
+                  <div class="ms-field">
+                    <label for="myStuffType">Type</label>
+                    <select id="myStuffType">
+                      <option value="page">Page</option>
+                      <option value="element" selected>Element</option>
+                    </select>
+                  </div>
+                  <div class="ms-field">
+                    <label for="myStuffTitle">Title <span class="ms-required" aria-hidden="true">*</span></label>
+                    <input id="myStuffTitle" type="text" maxlength="80" required autocomplete="off" placeholder="e.g., Weekly Checklist">
+                  </div>
+                </div>
+                <div class="ms-field">
+                  <label for="myStuffDesc">Description</label>
+                  <textarea id="myStuffDesc" rows="2" maxlength="200" placeholder="What is this for?"></textarea>
+                </div>
+                <div class="ms-field">
+                  <label for="myStuffHtml">HTML <span class="ms-required" aria-hidden="true">*</span></label>
+                  <textarea id="myStuffHtml" class="ms-code" rows="8" required spellcheck="false" placeholder="&lt;div style=&quot;...&quot;&gt;...&lt;/div&gt;"></textarea>
+                  <span class="ms-hint">Use inline CSS. Canvas removes &lt;script&gt; tags and most &lt;style&gt; blocks.</span>
+                </div>
+                <div class="layout-preview-wrap">
+                  <span class="layout-preview-label">Preview</span>
+                  <iframe id="myStuffFormPreview" class="layout-preview-frame" sandbox="allow-scripts allow-forms allow-popups" title="My Stuff preview"></iframe>
+                </div>
+                <p id="myStuffFormError" class="ms-form-error" role="alert" hidden></p>
+                <div class="options-insert-row">
+                  <button id="myStuffSaveButton" class="layout-insert-button" type="submit">Save</button>
+                  <button id="myStuffCancelButton" class="options-copy-button" type="button">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div id="myStuffDetailView" class="layout-options-view" hidden>
+            <button id="myStuffDetailBack" class="layout-back-button" type="button">← Back to My Stuff</button>
+            <div class="layout-options-card">
+              <h2 id="myStuffDetailTitle">Item</h2>
+              <p id="myStuffDetailDesc"></p>
+              <p id="myStuffDetailMeta" class="ms-detail-meta"></p>
+              <div class="layout-preview-wrap">
+                <span class="layout-preview-label">Preview</span>
+                <iframe id="myStuffDetailPreview" class="layout-preview-frame" sandbox="allow-scripts allow-forms allow-popups" title="My Stuff item preview"></iframe>
+              </div>
+              <div class="options-insert-row">
+                <button id="myStuffInsertButton" class="layout-insert-button" type="button">Insert</button>
+                <button id="myStuffEditButton" class="options-copy-button" type="button">Edit</button>
+                <button id="myStuffCopyButton" class="options-copy-button" type="button">Copy HTML</button>
+                <button id="myStuffRemoveButton" class="options-copy-button ms-remove-button" type="button">Remove</button>
+              </div>
+            </div>
+          </div>
+          <div id="myStuffFolderView" class="layout-options-view" hidden>
+            <button id="myStuffFolderBack" class="layout-back-button" type="button">← Back to My Stuff</button>
+            <div class="layout-options-card">
+              <h2>My Stuff folder</h2>
+              <div id="myStuffFolderSettings"></div>
+              <p class="ms-folder-note">Folder picker not opening? <a href="#" id="myStuffFolderTabLink">Open folder settings in a tab</a>.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="layouts.js"></script>
+  <script src="icon-library.js"></script>
+  <script src="general-icon-library.js"></script>
+  <script src="icon-banners-icon-library.js"></script>
+  <script src="fill-icons-icon-library.js"></script>
+  <script src="instructure-icon-previews.js"></script>
+  <script src="popup.js"></script>
+  <script src="ai.js"></script>
+  <script src="my-stuff-store.js"></script>
+  <script src="my-stuff-folder.js"></script>
+  <script src="my-stuff.js"></script>
+</body>
+</html>
