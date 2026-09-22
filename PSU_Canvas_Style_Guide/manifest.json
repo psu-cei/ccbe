@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PSU Canvas Style Guide",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Insert responsive PSU-styled layouts and assets into the Canvas LMS page editor.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwVKPHoYFxqLGsvrPxR599bCRHY/ATqxDU/JIxCCCXSyGTyIHeLesQ24fiOjiQzOeQEX346VIB0jdyq5a9RzCMeLHfG5ORDeNHk4UQOjoxbEup5XDTd0u4GJ1C+UkvTrxaEaptdTyK8Qe7zKFKa4YdXsb+ywJ1ceUy8oGvlfjjbNlX/cZXr7c4wJUQkKB2xArrVi2fc8/lNu3WA0pujKXhmhTiAJgwrJJf9FDnKhN6+NMSkNBrrNA6OcxIXMzXNz+Re+CfKPF1i7iVjgHVdAddLB8kbjug8SHyxatrSZgyrgv/vvmrUZibYtOlXjdq3OGrjOaHNrn3ACs9VT4S01mWQIDAQAB",
   "action": {
