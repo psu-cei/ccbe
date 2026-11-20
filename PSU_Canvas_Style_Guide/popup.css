@@ -94,13 +94,13 @@ main { padding: 18px 20px 20px; }
 
 .panel-slider {
   display: flex;
-  width: 600%;
+  width: 500%;
   transform: translateX(0);
   transition: transform .28s ease;
 }
 
 .style-panel {
-  width: 16.6667%;
+  width: 20%;
   padding: 0 1px;
 }
 
@@ -594,198 +594,12 @@ main { padding: 18px 20px 20px; }
 }
 
 
-.aistudio-panel {
-  padding: 0 1px;
-}
-
-.aistudio-hero {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin: 0 0 14px;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--psu-dark) 0%, var(--psu-blue) 55%, var(--psu-bright-blue) 100%);
-  color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(16,46,95,.18);
-}
-
-.aistudio-logo {
-  flex: 0 0 58px;
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.16);
-  border: 1px solid rgba(255,255,255,.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 24px;
-  letter-spacing: .04em;
-}
-
-.aistudio-hero h2 {
-  margin: 0 0 6px;
-  color: #ffffff;
-  font-size: 22px;
-  line-height: 1.2;
-}
-
-.aistudio-hero p {
-  margin: 0;
-  color: #ffffff;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.aistudio-open {
-  display: block;
-  width: 100%;
-  margin: 0 0 14px;
-  padding: 13px 16px;
-  text-align: center;
-  background: var(--psu-blue);
-  color: #ffffff;
-  border: 1px solid var(--psu-blue);
-  border-radius: 10px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.aistudio-open:hover,
-.aistudio-open:focus-visible {
-  background: var(--psu-dark);
-  outline: 3px solid rgba(47,129,211,.25);
-  outline-offset: 2px;
-}
-
-.aistudio-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.prompt-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 210px;
-  padding: 14px;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(16,46,95,.12);
-}
-
-.prompt-card.is-hidden {
-  display: none;
-}
-
-.prompt-card strong {
-  display: block;
-  color: var(--psu-blue);
-  font-size: 17px;
-  line-height: 1.25;
-}
-
-.prompt-card p {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.prompt-preview {
-  flex: 1 1 auto;
-  padding: 10px;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1.35;
-  white-space: pre-wrap;
-  max-height: 118px;
-  overflow: auto;
-}
-
-.prompt-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.prompt-actions button,
-.prompt-actions a {
-  flex: 1 1 130px;
-  border: 1px solid var(--psu-blue);
-  border-radius: 8px;
-  padding: 9px 10px;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.prompt-actions button {
-  background: var(--psu-blue);
-  color: #ffffff;
-}
-
-.prompt-actions a {
-  background: #ffffff;
-  color: var(--psu-blue);
-}
-
-.prompt-actions button:hover,
-.prompt-actions button:focus-visible,
-.prompt-actions a:hover,
-.prompt-actions a:focus-visible {
-  outline: 3px solid rgba(47,129,211,.25);
-  outline-offset: 2px;
-}
-
-.copy-status {
-  grid-column: 1 / -1;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-left: 5px solid var(--psu-bright-blue);
-  border-radius: 8px;
-  padding: 12px 14px;
-  color: var(--text);
-  font-size: 14px;
-}
-
-
-.ai-category-control {
-  margin: 0 0 14px;
-}
-
-.ai-category-control label,
 .ai-layout-recommender label {
   display: block;
   color: var(--psu-blue);
   font-size: 13px;
   font-weight: 700;
   margin: 0 0 6px;
-}
-
-.ai-category-select {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 700;
-  padding: 11px 12px;
-}
-
-.ai-category-select:focus {
-  border-color: var(--psu-bright-blue);
-  outline: 3px solid rgba(47,129,211,.25);
-  outline-offset: 2px;
 }
 
 .ai-layout-recommender {
@@ -882,20 +696,7 @@ main { padding: 18px 20px 20px; }
   font-weight: 700;
 }
 
-.prompt-actions button.copy-open-button {
-  background: #ffffff;
-  color: var(--psu-blue);
-}
 
-.prompt-actions button {
-  flex: 1 1 160px;
-}
-
-
-button.aistudio-open {
-  cursor: pointer;
-  font-family: Arial, Helvetica, sans-serif;
-}
 
 
 .layout-recommendation-list {
@@ -2202,262 +2003,6 @@ button.aistudio-open {
   padding: 8px 10px;
 }
 
-/* ============================================
-   AI Page Assistant panel
-   ============================================ */
-
-.ai-tab {
-  background: linear-gradient(135deg, var(--psu-dark) 0%, var(--psu-blue) 60%, var(--psu-bright-blue) 100%);
-  color: #fff;
-  border-color: var(--psu-dark);
-}
-
-.ai-tab.is-active,
-.ai-tab:hover,
-.ai-tab:focus-visible {
-  background: var(--psu-dark);
-  border-color: var(--psu-dark);
-}
-
-.ai-assistant-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.ai-connect-card,
-.ai-results {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(16, 46, 95, .12);
-}
-
-.ai-connect-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.ai-connect-header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--psu-blue);
-}
-
-.ai-connection-badge {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #f2f2f2;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.ai-connection-badge.is-connected {
-  background: #e2f4e8;
-  color: #0b874b;
-}
-
-.ai-connect-desc {
-  margin: 8px 0 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.ai-settings-toggle {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-}
-
-.ai-settings-toggle summary {
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--psu-blue);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.ai-settings-provider {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.ai-settings-body { margin-top: 12px; }
-
-.ai-settings-body label {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  margin: 10px 0 4px;
-}
-
-.ai-key-row {
-  display: flex;
-  gap: 8px;
-}
-
-.ai-key-row input {
-  flex: 1;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 10px;
-  font-size: 13px;
-}
-
-.ai-connect-button {
-  border: 1px solid var(--psu-blue);
-  background: var(--psu-blue);
-  color: #fff;
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.ai-connect-button:disabled {
-  opacity: .6;
-  cursor: wait;
-}
-
-.ai-key-help {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ai-settings-body #aiModel {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 10px;
-  font-size: 13px;
-}
-
-.ai-disconnect-button {
-  margin-top: 10px;
-  border: 1px solid #b42318;
-  background: #fff;
-  color: #b42318;
-  border-radius: 8px;
-  padding: 7px 12px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.ai-actions-row { margin-top: 4px; }
-
-.ai-analyze-button { width: 100%; }
-
-.ai-analyze-button:disabled {
-  opacity: .6;
-  cursor: wait;
-}
-
-.ai-fallback-note {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ai-results-heading {
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: var(--psu-blue);
-}
-
-.ai-recommendation-list {
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ai-recommendation-list li {
-  background: #f6f8fb;
-  border: 1px solid var(--border);
-  border-left: 5px solid var(--psu-bright-blue);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.ai-recommendation-list li strong {
-  color: var(--psu-blue);
-}
-
-.ai-preview-frame {
-  width: 100%;
-  height: 320px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  margin-bottom: 14px;
-}
-
-.ai-insert-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.ai-insert-row .layout-insert-button { flex: 1 1 180px; }
-
-.ai-replace-button {
-  background: #fff;
-  color: var(--psu-blue);
-  border: 1px solid var(--psu-blue);
-}
-
-.ai-copy-button {
-  flex: 0 0 auto;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--text);
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.ai-review-note {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ai-status-message {
-  margin: 10px 0 0;
-  padding: 10px 12px;
-  background: #f6f8fb;
-  border: 1px solid var(--border);
-  border-left: 5px solid var(--psu-bright-blue);
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.ai-status-message.is-error {
-  background: #fdf3f2;
-  border-left-color: #b42318;
-  color: #7a1710;
-}
-
-/* Temporarily hidden — AI feature on hold. Remove this rule to restore the tab. */
-.ai-tab { display: none; }
-
 .asset-field-help {
   margin: 6px 0 0;
   font-size: 12px;
@@ -2716,4 +2261,239 @@ button.aistudio-open {
 #tableOptions textarea::placeholder {
   color: #e8eaec;
   opacity: 1;
+}
+
+/* ============================================
+   Popup height follows the visible panel
+   ============================================
+   Every panel lives in one horizontal flex row, so the row — and therefore the
+   popup — was always as tall as the tallest panel. Collapsing the inactive
+   panels lets Chrome size the popup to the panel you are actually looking at,
+   and add a scrollbar only when that panel is taller than the window.
+   The rules are scoped to .has-active-panel, which showPanel() adds, so the
+   layout still works if that script never runs. */
+.panel-slider { align-items: flex-start; }
+
+.panel-slider.has-active-panel > .style-panel {
+  height: 0;
+  overflow: hidden;
+}
+
+.panel-slider.has-active-panel > .style-panel.is-active-panel {
+  height: auto;
+  overflow: visible;
+}
+
+/* ============================================
+   Compact list view (Layouts, Elements, My Stuff)
+   ============================================ */
+.layout-view-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.layout-view-label {
+  color: var(--psu-blue);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.layout-view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.layout-view-button {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--psu-blue);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.layout-view-button.is-selected {
+  background: var(--psu-blue);
+  border-color: var(--psu-blue);
+  color: #ffffff;
+}
+
+.layout-view-button:focus-visible {
+  outline: 3px solid rgba(47,129,211,.35);
+  outline-offset: 2px;
+}
+
+/* Compact rows: two per line, no thumbnail, one-line description. */
+.layout-grid.is-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.layout-grid.is-list .layout-card {
+  min-height: 0;
+  padding: 9px 12px;
+  box-shadow: none;
+}
+
+.layout-grid.is-list .layout-card:hover,
+.layout-grid.is-list .layout-card:focus-visible {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(16, 46, 95, .14);
+}
+
+.layout-grid.is-list .preview { display: none; }
+
+.layout-grid.is-list .layout-card strong {
+  margin: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layout-grid.is-list .layout-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* My Stuff list rows: drop the placeholder artwork but keep the Page/Element
+   badge, which is the one piece of the thumbnail that carries information.
+   Same specificity as the rule hiding .preview, so order decides. */
+/* my-stuff.css loads after this file and styles these as .preview.ms-thumb,
+   so these selectors carry the extra class to win on specificity. */
+.layout-grid.is-list .preview.ms-thumb {
+  display: block;
+  height: auto;
+  min-height: 0;
+  margin: 0 0 4px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.layout-grid.is-list .preview.ms-thumb .ms-thumb-image { display: none; }
+
+.layout-grid.is-list .preview.ms-thumb .ms-type-badge {
+  position: static;
+  display: inline-block;
+}
+
+
+/* ============================================================
+   Header redesign (flat navy bar, 80px, gradient rule)
+   Overrides the older gradient/pill-button header above.
+   ============================================================ */
+:root {
+  --navy: #14254a;
+  --navy-ink: #ffffff;
+  --navy-soft: #a8b8d4;
+  --sky: #35A6E1;
+  --gold: #FFD100;
+}
+
+.psu-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  height: 80px;
+  padding: 0 20px;
+  color: var(--navy-ink);
+  background: var(--navy);
+  border-bottom: 0;
+}
+
+.psu-header-rule {
+  height: 6px;
+  background: linear-gradient(90deg, var(--sky), #60c8ff, var(--gold));
+}
+
+.header-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.psu-header h1 {
+  display: block;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--navy-ink);
+}
+
+.psu-header .header-copy p {
+  display: block;
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  line-height: 1.2;
+}
+
+/* Shortcuts / Support read as nav links, not pills. */
+.psu-header .services-dropdown,
+.psu-header .support-dropdown,
+.psu-header .cei-header-dropdown {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.psu-header .services-dropdown {
+  margin-left: auto;
+}
+
+.psu-header .cei-header-dropdown-button,
+.psu-header .services-button,
+.psu-header .support-button {
+  display: inline-block !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  border: 0 !important;
+  border-bottom: 4px solid transparent !important;
+  border-radius: 0 !important;
+  background: none !important;
+  color: var(--navy-ink) !important;
+  font-family: inherit;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+.psu-header .cei-header-dropdown-button:hover,
+.psu-header .cei-header-dropdown-button[aria-expanded="true"] {
+  border-bottom-color: #60c8ff !important;
+  background: none !important;
+  color: var(--navy-ink) !important;
+}
+
+.psu-header .cei-header-dropdown-button:focus-visible {
+  border-bottom-color: #60c8ff !important;
+  background: none !important;
+  color: var(--navy-ink) !important;
+  outline: 2px solid #60c8ff !important;
+  outline-offset: 4px !important;
+}
+
+.psu-header .services-caret,
+.psu-header .support-caret {
+  display: none !important;
 }

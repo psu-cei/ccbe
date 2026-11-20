@@ -10,15 +10,14 @@
 <body>
 
   <header class="psu-header">
-    <img src="assets/icons/icon.png" alt="" class="psu-logo">
     <div class="header-copy">
       <h1>CEI Style Guide</h1>
-      <p>Open your editor, select, and customize content.</p>
+      <p>Open your editor, select, and customize</p>
     </div>
-    
+
     <div class="services-dropdown cei-header-dropdown">
       <button class="services-button cei-header-dropdown-button" id="shortcutsToggle" type="button" aria-expanded="false" aria-controls="shortcutsMenu">
-        Shortcuts <span class="services-caret" aria-hidden="true">⌄</span>
+        Shortcuts
       </button>
       <ul class="cei-header-dropdown-menu" id="shortcutsMenu" role="menu" aria-label="Shortcuts menu">
         <li><a target="_blank" href="https://airtable.com/app0ujxqVeUOd6eB0/pagNFUeE1G8aamxMf?6lDdc=reccH5HAycJQ28OFy" role="menuitem">CEI World</a></li>
@@ -32,7 +31,7 @@
 
     <div class="support-dropdown cei-header-dropdown">
       <button class="support-button cei-header-dropdown-button" id="supportToggle" type="button" aria-expanded="false" aria-controls="supportMenu">
-        Support <span class="support-caret" aria-hidden="true">⌄</span>
+        Support
       </button>
       <ul class="cei-header-dropdown-menu" id="supportMenu" role="menu" aria-label="Support menu">
         <li><a target="_blank" href="https://pennstate.service-now.com/sp?id=get_it_help" role="menuitem">Open an IT Support Ticket</a></li>
@@ -42,11 +41,11 @@
     </div>
 
   </header>
+  <div class="psu-header-rule" aria-hidden="true"></div>
 
   <main>
     <div class="panel-controls cei-tab-navigation" role="tablist" aria-label="Style guide panels">
-      <button class="panel-tab ai-tab" type="button" role="tab" aria-selected="false" data-panel="5">AI</button>
-      <button class="panel-tab my-stuff-tab" type="button" role="tab" aria-selected="false" data-panel="6">My Stuff</button>
+      <button class="panel-tab my-stuff-tab" type="button" role="tab" aria-selected="false" data-panel="4">My Stuff</button>
       <button class="panel-tab is-active" type="button" role="tab" aria-selected="false" data-panel="1">Layouts</button>
       <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="2">Elements</button>
       <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="3">Asset Library</button>
@@ -78,6 +77,14 @@
               <option value="full-pages">Full Pages</option>
               <option value="sections">Sections</option>
             </select>
+          </div>
+
+          <div class="layout-view-control">
+            <span class="layout-view-label" id="layoutViewLabel">View</span>
+            <div class="layout-view-toggle" role="radiogroup" aria-labelledby="layoutViewLabel">
+              <button type="button" class="layout-view-button is-selected" data-layout-view="grid" role="radio" aria-checked="true">Grid</button>
+              <button type="button" class="layout-view-button" data-layout-view="list" role="radio" aria-checked="false">List</button>
+            </div>
           </div>
           <div id="layoutMainView" class="layout-main-view">
             <div class="recent-row" id="recentLayoutsRow" hidden>
@@ -202,6 +209,14 @@
             <div class="recent-row" id="recentElementsRow" hidden>
               <span class="recent-row-label">Recently used</span>
               <div class="recent-row-chips" id="recentElementsChips"></div>
+            </div>
+
+            <div class="layout-view-control">
+              <span class="layout-view-label" id="elementViewLabel">View</span>
+              <div class="layout-view-toggle" role="radiogroup" aria-labelledby="elementViewLabel">
+                <button type="button" class="layout-view-button is-selected" data-layout-view="grid" role="radio" aria-checked="true">Grid</button>
+                <button type="button" class="layout-view-button" data-layout-view="list" role="radio" aria-checked="false">List</button>
+              </div>
             </div>
             <div class="layout-grid" id="interactivePanel"></div>
           </div>
@@ -588,96 +603,6 @@
             <button id="assetInsertButton" class="layout-insert-button" type="button">Insert Asset</button>
           </div>
         </section>
-        <section class="style-panel" aria-label="AI Studio prompt library">
-          <div class="aistudio-panel">
-            <div class="aistudio-hero">
-              <div class="aistudio-logo" aria-hidden="true">AI</div>
-              <div>
-                <h2>AI Studio Prompt Library</h2>
-                <p>Use these prompt starters with Penn State AI Studio to quickly create Canvas-ready course content, layout ideas, activities, and accessibility improvements.</p>
-              </div>
-            </div>
-
-            <a class="aistudio-open" href="https://aistudio.psu.edu/chat/onechat" target="_blank" rel="noopener noreferrer">Open AI Studio</a>
-
-            <div class="ai-category-control">
-              <label for="aiPromptCategory">Prompt category</label>
-              <select id="aiPromptCategory" class="ai-category-select">
-                <option value="all">All Categories</option>
-                <option value="Course Design">Course Design</option>
-                <option value="Module Design">Module Design</option>
-                <option value="Assessment">Assessment</option>
-                <option value="Accessibility">Accessibility</option>
-                <option value="Canvas Pages">Canvas Pages</option>
-                <option value="Multimedia">Multimedia</option>
-              </select>
-            </div>
-
-            <div class="panel-search">
-              <label for="aiPromptSearch">Search AI prompts</label>
-              <input id="aiPromptSearch" class="card-search" type="search" placeholder="Search AI prompt templates..." data-target="aiStudioPromptGrid">
-            </div>
-
-            <div class="aistudio-grid" id="aiStudioPromptGrid"></div>
-          </div>
-        </section>
-        <section class="style-panel" aria-label="AI page assistant">
-          <div class="ai-assistant-panel">
-
-            <div class="ai-connect-card" id="aiConnectCard">
-              <div class="ai-connect-header">
-                <h2>AI Page Assistant</h2>
-                <span class="ai-connection-badge" id="aiConnectionBadge">Not connected</span>
-              </div>
-              <p class="ai-connect-desc">Connect your ChatGPT account (OpenAI API key) to analyze the open Canvas page, get pedagogical recommendations, and generate a modern PSU-styled redesign — or use Penn State AI Studio below.</p>
-
-              <details class="layout-option-group ai-settings-toggle" id="aiSettingsToggle" open>
-                <summary><span>ChatGPT account</span><span class="ai-settings-provider" id="aiSettingsProviderLabel"></span></summary>
-                <div class="ai-settings-body">
-                  <label for="aiApiKey" id="aiApiKeyLabel">OpenAI API key</label>
-                  <div class="ai-key-row">
-                    <input id="aiApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-...">
-                    <button id="aiConnectButton" class="ai-connect-button" type="button">Connect</button>
-                  </div>
-                  <p class="ai-key-help" id="aiKeyHelp">
-                    Get a key at <a href="https://platform.openai.com/api-keys" id="aiKeyLink" target="_blank" rel="noopener noreferrer">platform.openai.com</a>.
-                    Your key is stored only on this computer and sent only to OpenAI.
-                  </p>
-
-                  <label for="aiModel">Model</label>
-                  <input id="aiModel" type="text" autocomplete="off" spellcheck="false" placeholder="gpt-4o">
-
-                  <button id="aiDisconnectButton" class="ai-disconnect-button" type="button" hidden>Remove key</button>
-                </div>
-              </details>
-
-              <div class="ai-actions-row">
-                <button id="aiAnalyzeButton" class="layout-insert-button ai-analyze-button" type="button">Analyze Page &amp; Generate Redesign</button>
-              </div>
-              <p id="aiStatusMessage" class="ai-status-message" role="status" aria-live="polite" hidden></p>
-              <p class="ai-fallback-note">
-                No API key? <a href="#" id="aiStudioFallbackLink">Copy this page into an AI Studio prompt</a> and use
-                <a href="https://aistudio.psu.edu/chat/onechat" target="_blank" rel="noopener noreferrer">Penn State AI Studio</a> instead.
-              </p>
-            </div>
-
-            <div class="ai-results" id="aiResults" hidden>
-              <h2 class="ai-results-heading">Recommendations</h2>
-              <ul class="ai-recommendation-list" id="aiRecommendationList"></ul>
-
-              <h2 class="ai-results-heading">Modern Layout Preview</h2>
-              <iframe id="aiPreviewFrame" class="ai-preview-frame" sandbox="allow-same-origin" title="AI generated layout preview"></iframe>
-
-              <div class="ai-insert-row">
-                <button id="aiInsertCursorButton" class="layout-insert-button" type="button">Insert at Cursor</button>
-                <button id="aiReplacePageButton" class="layout-insert-button ai-replace-button" type="button">Replace Page Content</button>
-                <button id="aiCopyHtmlButton" class="ai-copy-button" type="button">Copy HTML</button>
-              </div>
-              <p class="ai-review-note">Review AI output before inserting. Check facts, links, and alt text.</p>
-            </div>
-
-          </div>
-        </section>
         <section class="style-panel my-stuff-panel" aria-label="My Stuff">
           <div id="myStuffMainView">
             <div class="ms-toolbar">
@@ -701,6 +626,14 @@
                 </select>
               </div>
             </div>
+
+            <div class="layout-view-control">
+              <span class="layout-view-label" id="myStuffViewLabel">View</span>
+              <div class="layout-view-toggle" role="radiogroup" aria-labelledby="myStuffViewLabel">
+                <button type="button" class="layout-view-button is-selected" data-layout-view="grid" role="radio" aria-checked="true">Grid</button>
+                <button type="button" class="layout-view-button" data-layout-view="list" role="radio" aria-checked="false">List</button>
+              </div>
+            </div>
             <div class="layout-grid" id="myStuffGrid"></div>
             <div class="ms-empty" id="myStuffEmpty" hidden>
               <h2>Nothing saved yet</h2>
@@ -712,7 +645,10 @@
           <div id="myStuffAddView" class="layout-options-view" hidden>
             <button id="myStuffAddBack" class="layout-back-button" type="button">← Back to My Stuff</button>
             <div class="layout-options-card">
-              <h2 id="myStuffFormHeading">Add to My Stuff</h2>
+              <div class="ms-form-head">
+                <h2 id="myStuffFormHeading">Add to My Stuff</h2>
+                <button id="myStuffSharingButton" class="options-copy-button" type="button">Team Sharing</button>
+              </div>
               <p id="myStuffFormIntro">Only you can see these. They're saved in your Chrome profile (and your my-stuff folder, if connected).</p>
               <form id="myStuffForm" novalidate>
                 <div class="ms-form-row">
@@ -768,6 +704,14 @@
               </div>
             </div>
           </div>
+          <div id="myStuffSharingView" class="layout-options-view" hidden>
+            <button id="myStuffSharingBack" class="layout-back-button" type="button">← Back to My Stuff</button>
+            <div class="layout-options-card">
+              <h2>Team sharing</h2>
+              <div id="myStuffSharingSettings"></div>
+            </div>
+          </div>
+
           <div id="myStuffFolderView" class="layout-options-view" hidden>
             <button id="myStuffFolderBack" class="layout-back-button" type="button">← Back to My Stuff</button>
             <div class="layout-options-card">
@@ -786,9 +730,7 @@
   <script src="general-icon-library.js"></script>
   <script src="icon-banners-icon-library.js"></script>
   <script src="fill-icons-icon-library.js"></script>
-  <script src="instructure-icon-previews.js"></script>
   <script src="popup.js"></script>
-  <script src="ai.js"></script>
   <script src="my-stuff-store.js"></script>
   <script src="my-stuff-folder.js"></script>
   <script src="my-stuff.js"></script>

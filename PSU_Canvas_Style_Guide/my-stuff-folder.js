@@ -1,9 +1,11 @@
-// Folder settings UI, shared by the popup (My Stuff > Folder settings) and
-// the standalone my-stuff-folder.html tab. Call CCBEMyStuffFolderUI.mount(el).
+// Two independent panels, shared by the popup and the standalone
+// my-stuff-folder.html tab:
+//   CCBEMyStuffFolderUI.mount(el)        -> folder connection + sync
+//   CCBEMyStuffFolderUI.mountSharing(el) -> team export / import
 (function () {
   const store = window.CCBEMyStuff;
 
-  const MARKUP = `
+  const FOLDER_MARKUP = `
     <p class="ms-folder-intro">Your saved pages and elements always stay in your own Chrome profile. Connect a folder to also keep each one as an <code>.html</code> file. A folder named <strong>my-stuff</strong> is created inside the folder you choose (or pick an existing <strong>my-stuff</strong> folder).</p>
     <div class="ms-folder-status ms-folder-status-large" data-ms="statusBox"><span data-ms="statusText">Checking…</span></div>
     <div class="ms-folder-actions">
@@ -16,14 +18,64 @@
     <p data-ms="message" class="ms-folder-message" role="status" aria-live="polite"></p>
     <p class="ms-folder-note">Tip: when Chrome asks, choose <em>Allow on every visit</em> so the folder stays in sync without asking again. Disconnecting never deletes files.</p>`;
 
+  const SHARING_MARKUP = `
+    <p class="ms-share-intro">Export your saved items as <code>.html</code> files to share with a teammate, or import files they sent you. When an item you already have comes in, the newer copy updates your files.</p>
+
+    <label class="ms-share-label" for="msAuthorName">Your name</label>
+    <div class="ms-share-row">
+      <input id="msAuthorName" data-ms="authorInput" type="text" maxlength="60" placeholder="e.g. Jaimen" autocomplete="off">
+      <button data-ms="authorSave" class="options-copy-button" type="button">Save</button>
+    </div>
+    <p class="ms-share-note">Stamped onto the files you export so teammates can see who made them. Stored only on this computer.</p>
+
+    <div class="ms-folder-actions">
+      <button data-ms="export" class="layout-insert-button" type="button">Export to a folder…</button>
+      <button data-ms="importFiles" class="options-copy-button" type="button">Import files…</button>
+      <button data-ms="importOther" class="options-copy-button" type="button">Import from another folder…</button>
+    </div>
+    <input data-ms="fileInput" type="file" accept=".html,.htm" multiple hidden>
+    <p data-ms="shareMessage" class="ms-folder-message" role="status" aria-live="polite"></p>
+    <p data-ms="popupNote" class="ms-share-note" hidden>If choosing files closes this window before the import finishes, <a href="#" data-ms="fullPageLink">open the full page</a> and try again there.</p>`;
+
   function syncSummary(result) {
     if (!result.ok && !result.written && !result.deleted) return 'Could not write to the folder.';
     return `Sync complete: ${result.written} file(s) written, ${result.deleted} file(s) removed.${result.ok ? '' : ' Some changes failed; try Sync now again.'}`;
   }
 
+  function mergeSummary(result) {
+    if (!result || !result.total) return 'No .html files found to import.';
+    const parts = [];
+    if (result.added) parts.push(`${result.added} added`);
+    if (result.updated) parts.push(`${result.updated} updated`);
+    if (result.skipped) parts.push(`${result.skipped} already up to date`);
+    return `Import complete: ${parts.join(', ')}.`;
+  }
+
+  function openFullPage() {
+    chrome.tabs.create({ url: chrome.runtime.getURL('my-stuff-folder.html#team-sharing') });
+  }
+
+  // Wraps an action so the button can't be double-clicked and any failure is
+  // reported rather than swallowed.
+  function makeRunner(report, after) {
+    return async function run(button, task) {
+      button.disabled = true;
+      try {
+        await task();
+      } catch (error) {
+        if (error && error.name === 'AbortError') report('No folder chosen.');
+        else report(`Something went wrong: ${error && error.message ? error.message : error}`, true);
+      } finally {
+        button.disabled = false;
+        if (after) after();
+      }
+    };
+  }
+
+  // ---- Folder settings ----------------------------------------------------
   function mount(root) {
     if (!store || !root) return null;
-    root.innerHTML = MARKUP;
+    root.innerHTML = FOLDER_MARKUP;
     const q = (name) => root.querySelector(`[data-ms="${name}"]`);
     const statusBox = q('statusBox');
     const statusText = q('statusText');
@@ -64,18 +116,7 @@
       }
     }
 
-    async function run(button, task) {
-      button.disabled = true;
-      try {
-        await task();
-      } catch (error) {
-        if (error && error.name === 'AbortError') say('No folder chosen.');
-        else say(`Something went wrong: ${error && error.message ? error.message : error}`, true);
-      } finally {
-        button.disabled = false;
-        render();
-      }
-    }
+    const run = makeRunner(say, render);
 
     chooseButton.addEventListener('click', () => run(chooseButton, async () => {
       const result = await store.pickFolder();
@@ -93,8 +134,7 @@
     }));
 
     importButton.addEventListener('click', () => run(importButton, async () => {
-      const count = await store.importFromFolder();
-      say(count ? `Imported ${count} item(s) into My Stuff.` : 'No new .html files found in the folder.');
+      say(mergeSummary(await store.importFromFolder()));
     }));
 
     disconnectButton.addEventListener('click', () => run(disconnectButton, async () => {
@@ -110,9 +150,99 @@
     return { render, clearMessage: () => say('') };
   }
 
-  window.CCBEMyStuffFolderUI = { mount };
+  // ---- Team sharing -------------------------------------------------------
+  function mountSharing(root) {
+    if (!store || !root) return null;
+    root.innerHTML = SHARING_MARKUP;
+    const q = (name) => root.querySelector(`[data-ms="${name}"]`);
+    const authorInput = q('authorInput');
+    const authorSaveButton = q('authorSave');
+    const exportButton = q('export');
+    const importFilesButton = q('importFiles');
+    const importOtherButton = q('importOther');
+    const fileInput = q('fileInput');
+    const shareMessage = q('shareMessage');
+    const popupNote = q('popupNote');
+    const fullPageLink = q('fullPageLink');
 
-  // Standalone tab page.
-  const standalone = document.getElementById('msFolderStandalone');
-  if (standalone) mount(standalone);
+    // Only a popup can be closed by a native file dialog.
+    const isStandalone = root.id === 'msSharingStandalone';
+
+    function say(text, isError) {
+      shareMessage.textContent = text || '';
+      shareMessage.classList.toggle('is-error', Boolean(isError));
+    }
+
+    async function render() {
+      const [state, items] = await Promise.all([store.getFolderState(), store.getItems()]);
+      // Sharing works with or without a connected sync folder; only the
+      // folder-based actions need File System Access support.
+      const canUseFolders = state.status !== 'unsupported';
+      exportButton.hidden = !canUseFolders;
+      importOtherButton.hidden = !canUseFolders;
+      exportButton.disabled = !items.length;
+      if (popupNote) popupNote.hidden = isStandalone;
+      if (document.activeElement !== authorInput) {
+        authorInput.value = await store.getAuthorName();
+      }
+    }
+
+    const run = makeRunner(say, render);
+
+    authorSaveButton.addEventListener('click', () => run(authorSaveButton, async () => {
+      await store.setAuthorName(authorInput.value);
+      const saved = await store.getAuthorName();
+      say(saved ? `Saved. Files you export will say “from ${saved}”.` : 'Name cleared.');
+    }));
+
+    exportButton.addEventListener('click', () => run(exportButton, async () => {
+      const result = await store.exportAllToFolder();
+      if (!result.total) { say('You have no saved items to export yet.'); return; }
+      say(
+        `Exported ${result.written} of ${result.total} item(s) to “${result.folderName}”. `
+        + 'Share that folder, or delete any files you would rather not send first.',
+        !result.ok
+      );
+    }));
+
+    importOtherButton.addEventListener('click', () => run(importOtherButton, async () => {
+      say(mergeSummary(await store.importFromOtherFolder()));
+    }));
+
+    importFilesButton.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => run(importFilesButton, async () => {
+      const files = fileInput.files;
+      if (!files || !files.length) { say('No files chosen.'); return; }
+      const result = await store.importFromFiles(files);
+      fileInput.value = '';
+      say(mergeSummary(result));
+    }));
+
+    if (fullPageLink) {
+      fullPageLink.addEventListener('click', (event) => { event.preventDefault(); openFullPage(); });
+    }
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local') render();
+    });
+
+    render();
+    return { render, clearMessage: () => say('') };
+  }
+
+  window.CCBEMyStuffFolderUI = { mount, mountSharing };
+
+  // Standalone tab page shows both panels.
+  const standaloneFolder = document.getElementById('msFolderStandalone');
+  if (standaloneFolder) mount(standaloneFolder);
+
+  const standaloneSharing = document.getElementById('msSharingStandalone');
+  if (standaloneSharing) {
+    mountSharing(standaloneSharing);
+    // Opened from the popup's Team Sharing button: jump straight to it.
+    if (window.location.hash === '#team-sharing') {
+      standaloneSharing.scrollIntoView({ block: 'start' });
+    }
+  }
 })();

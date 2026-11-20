@@ -11,7 +11,9 @@
   const addView = $('myStuffAddView');
   const detailView = $('myStuffDetailView');
   const folderView = $('myStuffFolderView');
+  const sharingView = $('myStuffSharingView');
   const folderUi = window.CCBEMyStuffFolderUI ? window.CCBEMyStuffFolderUI.mount($('myStuffFolderSettings')) : null;
+  const sharingUi = window.CCBEMyStuffFolderUI ? window.CCBEMyStuffFolderUI.mountSharing($('myStuffSharingSettings')) : null;
   const grid = $('myStuffGrid');
   const emptyState = $('myStuffEmpty');
   const searchInput = $('myStuffSearch');
@@ -28,6 +30,7 @@
   const saveButton = $('myStuffSaveButton');
   const formHeading = $('myStuffFormHeading');
   const formIntro = $('myStuffFormIntro');
+  const sharingButton = $('myStuffSharingButton');
   const formBackButton = $('myStuffAddBack');
   const editButton = $('myStuffEditButton');
   const ADD_INTRO = formIntro ? formIntro.textContent : '';
@@ -56,11 +59,19 @@
     addView.hidden = name !== 'add';
     detailView.hidden = name !== 'detail';
     if (folderView) folderView.hidden = name !== 'folder';
+    if (sharingView) sharingView.hidden = name !== 'sharing';
     window.scrollTo({ top: 0 });
   }
 
-  function openFolderPage() {
-    chrome.tabs.create({ url: chrome.runtime.getURL('my-stuff-folder.html') });
+  function openFolderPage(hash) {
+    chrome.tabs.create({ url: chrome.runtime.getURL(`my-stuff-folder.html${hash || ''}`) });
+  }
+
+  function openSharing() {
+    if (!sharingUi) { openFolderPage('#team-sharing'); return; }
+    sharingUi.clearMessage();
+    sharingUi.render();
+    showView('sharing');
   }
 
   function openFolderSettings() {
@@ -100,7 +111,7 @@
     const type = typeFilter.value;
     const visible = items.filter((item) => {
       const matchesType = type === 'all' || item.type === type;
-      const text = `${item.title} ${item.desc} ${item.type}`.toLowerCase();
+      const text = `${item.title} ${item.desc} ${item.type} ${item.author || ''}`.toLowerCase();
       return matchesType && (!query || text.includes(query));
     });
 
@@ -115,6 +126,14 @@
       card.appendChild(makeThumb(item));
       const title = document.createElement('strong');
       title.textContent = item.title;
+      // Items that arrived from a teammate are labelled so they aren't
+      // mistaken for your own work.
+      if (item.author) {
+        const badge = document.createElement('span');
+        badge.className = 'ms-author-badge';
+        badge.textContent = `from ${item.author}`;
+        title.appendChild(badge);
+      }
       const desc = document.createElement('small');
       desc.textContent = item.desc || 'No description';
       card.appendChild(title);
@@ -173,6 +192,9 @@
     formError.hidden = true;
     formHeading.textContent = 'Add to My Stuff';
     formIntro.textContent = ADD_INTRO;
+    // Importing is an alternative to filling in this form, so it is offered
+    // when adding but not when editing an existing item.
+    if (sharingButton) sharingButton.hidden = false;
     saveButton.textContent = 'Save';
     formBackButton.textContent = '← Back to My Stuff';
     formPreview.srcdoc = previewDoc('<p style="color:#5f6f7a;">Paste HTML to see a preview.</p>');
@@ -192,6 +214,7 @@
     htmlInput.value = item.html;
     formHeading.textContent = `Edit “${item.title}”`;
     formIntro.textContent = 'Changes replace the saved version (and its .html file, if a folder is connected).';
+    if (sharingButton) sharingButton.hidden = true;
     saveButton.textContent = 'Save Changes';
     formBackButton.textContent = '← Back to item';
     formPreview.srcdoc = previewDoc(item.html);
@@ -272,7 +295,8 @@
     resetRemoveButton();
     detailTitle.textContent = item.title;
     detailDesc.textContent = item.desc || 'No description.';
-    detailMeta.textContent = `${store.TYPES[item.type] || 'Element'} · ${item.fileName}`;
+    detailMeta.textContent = `${store.TYPES[item.type] || 'Element'} · ${item.fileName}`
+      + (item.author ? ` · from ${item.author}` : '');
     detailPreview.srcdoc = previewDoc(item.html);
     insertButton.textContent = item.type === 'page' ? 'Insert Page' : 'Insert Element';
     showView('detail');
@@ -326,6 +350,9 @@
   }
 
   // ---- Wire up -----------------------------------------------------------
+  // Opens the Team sharing controls in the popup's own folder view.
+  $('myStuffSharingButton').addEventListener('click', openSharing);
+
   $('myStuffAddButton').addEventListener('click', openAddForm);
   $('myStuffEmptyAddButton').addEventListener('click', openAddForm);
   $('myStuffAddBack').addEventListener('click', closeForm);
@@ -334,6 +361,7 @@
   $('myStuffDetailBack').addEventListener('click', () => showView('main'));
   folderButton.addEventListener('click', openFolderSettings);
   $('myStuffFolderBack').addEventListener('click', () => showView('main'));
+  $('myStuffSharingBack').addEventListener('click', () => showView('main'));
   $('myStuffFolderTabLink').addEventListener('click', (event) => { event.preventDefault(); openFolderPage(); });
   form.addEventListener('submit', handleSave);
   htmlInput.addEventListener('input', schedulePreview);

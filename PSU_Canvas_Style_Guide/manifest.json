@@ -25,9 +25,7 @@
     "*://*.canvaslms.com/*",
     "*://*.instructure.com/*",
     "*://canvas.psu.edu/*",
-    "https://*.psu.edu/*",
-    "https://aistudio.psu.edu/*",
-    "https://api.openai.com/*"
+    "https://*.psu.edu/*"
   ],
   "content_scripts": [
     {

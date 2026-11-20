@@ -2,9 +2,9 @@
    My Stuff panel + folder page
    ------------------------------------------------------------------------ */
 
-/* Six tabs now (AI stays hidden): widen the slider to 7 panels. */
-.panel-slider { width: 700% !important; }
-.style-panel { width: 14.2857% !important; }
+/* Five tabs, five panels: Search, Layouts, Elements, Asset Library, My Stuff. */
+.panel-slider { width: 500% !important; }
+.style-panel { width: 20% !important; }
 .panel-controls.cei-tab-navigation,
 .cei-tab-navigation {
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
@@ -247,8 +247,6 @@ body.ms-folder-page {
 #sliderShell .copy-status,
 #sliderShell .ai-layout-recommendation,
 #sliderShell .element-builder-panel,
-#sliderShell .ai-recommendation-list li,
-#sliderShell .ai-status-message,
 #sliderShell .ms-folder-status {
   border-left: 1px solid var(--border) !important;
 }
@@ -256,4 +254,107 @@ body.ms-folder-page {
 /* Folder settings status box (popup + tab page). Warning states keep their orange tint. */
 .ms-folder-status.ms-folder-status-large:not([data-state="prompt"]):not([data-state="denied"]) {
   background: #f8fafc;
+}
+
+/* ------------------------------------------------------------------------
+   Team sharing (export / import) inside Folder settings
+   ------------------------------------------------------------------------ */
+.ms-share-heading {
+  margin: 0 0 6px;
+  color: var(--psu-blue);
+  font-size: 16px;
+}
+
+.ms-share-intro,
+.ms-share-note {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ms-share-note { margin: 6px 0 14px; }
+
+.ms-share-label {
+  display: block;
+  color: var(--psu-blue);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.ms-share-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ms-share-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.ms-share-row input:focus {
+  border-color: var(--psu-bright-blue);
+  outline: 3px solid rgba(47,129,211,.25);
+  outline-offset: 1px;
+}
+
+.ms-share .ms-folder-actions { margin-top: 4px; }
+
+.ms-share .layout-insert-button[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* "from <teammate>" badge on items that arrived from someone else */
+.ms-author-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Add-form header: title on the left, Team Sharing on the right */
+.ms-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ms-form-head h2 { margin: 0; }
+
+.ms-form-head .options-copy-button { flex: 0 0 auto; }
+
+.ms-form-head .options-copy-button[hidden] { display: none; }
+
+/* Team Sharing reads as the one accent action on this view. */
+#myStuffSharingButton {
+  border-color: #e6bd00;
+  background: var(--gold, #FFD100);
+  color: var(--psu-blue);
+}
+
+#myStuffSharingButton:hover,
+#myStuffSharingButton:focus-visible {
+  border-color: #c9a500;
+  background: #ffdc3d;
+  color: var(--psu-blue);
+  outline: 2px solid rgba(255, 209, 0, .45);
+  outline-offset: 1px;
 }

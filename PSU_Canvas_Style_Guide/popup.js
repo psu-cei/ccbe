@@ -1,4 +1,25 @@
 const CEI_PUBLIC_ASSET_BASE = 'https://raw.githubusercontent.com/psu-cei/ccbe/main';
+
+// One-time cleanup: the AI features were removed in v1.2.0, but deleting the
+// code did not purge what earlier builds had already written to each user's
+// profile. An API key left behind in storage is worth clearing even though
+// nothing reads it any more. The sentinel keeps this to a single write.
+(function purgeRemovedAiStorage() {
+  const LEGACY_AI_KEYS = ['aiKeyOpenAI', 'aiModelOpenAI', 'aiStudioTabId'];
+  const SENTINEL = 'ccbeAiStoragePurged';
+  try {
+    chrome.storage.local.get(SENTINEL, (result) => {
+      if (chrome.runtime.lastError || (result && result[SENTINEL])) return;
+      chrome.storage.local.remove(LEGACY_AI_KEYS, () => {
+        if (chrome.runtime.lastError) return;
+        chrome.storage.local.set({ [SENTINEL]: true });
+      });
+    });
+  } catch (error) {
+    // Storage is not load-bearing here; never block the popup from opening.
+  }
+})();
+
 const statusEl = document.getElementById('status');
 const slider = document.getElementById('panelSlider');
 
@@ -89,8 +110,6 @@ const assetButtonSizeSelect = document.getElementById('assetButtonSizeSelect');
 const assetButtonAlignSelect = document.getElementById('assetButtonAlignSelect');
 const assetButtonText = document.getElementById('assetButtonText');
 const assetIconCollectionSelect = document.getElementById('assetIconCollectionSelect');
-const assetInstructureSizeOption = document.getElementById('assetInstructureSizeOption');
-const assetInstructureIconSizeSelect = document.getElementById('assetInstructureIconSizeSelect');
 const assetIconSearch = document.getElementById('assetIconSearch');
 const assetIconSelect = document.getElementById('assetIconSelect');
 const assetIconGrid = document.getElementById('assetIconGrid');
@@ -101,7 +120,6 @@ let selectedAssetIconKey = null;
 let selectedAssetKind = 'icons';
 let selectedAssetButtonStyle = 'solid';
 let selectedAssetButtonColor = '#1E407C';
-let selectedAssetInstructureIconSize = 'medium';
 let selectedAssetIconVariant = 'dark';
 const assetIconVariantSelect = document.getElementById('assetIconVariantSelect');
 
@@ -162,15 +180,6 @@ function populateAssetIconCategorySelect(collection) {
   assetIconCategoryWrap.hidden = categories.length < 2;
 }
 
-const panelMessages = [
-  'Search for layouts and elements, then paste a recommended option into Canvas.',
-  'Choose a layout, then customize options before inserting into Canvas.',
-  'Choose an element to paste into Canvas.',
-  'Choose an asset to paste into Canvas.',
-  'Copy a prompt template, then open AI Studio.',
-  'Connect your AI account, then analyze the open Canvas page for content and layout suggestions.',
-  'Save your own pages and elements, then insert them into Canvas. Only you can see them.'
-];
 
 const palettes = { blue: { name: 'Default', primary: '#1e407c', secondary: '#2f81d3', accent: '#35a6e1', dark: '#123061', soft: '#f2f2f2' } };
 
@@ -701,7 +710,7 @@ function setupLiveSearch() {
   if (layoutCategory) {
     layoutCategory.addEventListener('change', () => {
       filterLayoutsByCategory();
-      setStatus(`Showing ${layoutCategory.options[layoutCategory.selectedIndex].text} layouts. Choose a layout to paste into Canvas.`, false);
+      setStatus('', false);
     });
     filterLayoutsByCategory();
   }
@@ -847,16 +856,10 @@ function syncAssetButtonColor(source) {
   updateColorToggleSummary(document.querySelector('.asset-button-color-options'), selectedAssetButtonColor);
 }
 
-function updateAssetInstructureSizeVisibility() {
-  if (!assetInstructureSizeOption || !assetIconCollectionSelect) return;
-  assetInstructureSizeOption.hidden = assetIconCollectionSelect.value !== 'instructure';
-}
-
 function populateAssetIconSelect() {
   if (!assetIconCollectionSelect || !assetIconSelect) return;
 
   const selectedCollection = assetIconCollectionSelect.value || 'general';
-  updateAssetInstructureSizeVisibility();
   const icons = getCeiSvgIconEntries(selectedCollection);
   const fallbackIcons = icons.length ? icons : getCeiSvgIconEntries('general');
   const selectedStillExists = fallbackIcons.some((icon) => icon.key === selectedAssetIconKey);
@@ -916,7 +919,6 @@ function renderAssetIconGrid(icons) {
     preview.className = 'asset-icon-tile-preview';
 
     const type = (icon.type || '').toLowerCase();
-    const isInstructure = type === 'instructure' || icon.collection === 'instructure';
     const isGeneral = icon.collection === 'general';
     const isPng = type === 'png' || /\.png$/i.test(icon.path || '');
 
@@ -935,10 +937,6 @@ function renderAssetIconGrid(icons) {
         image.style.maxWidth = '100%';
       }
       preview.appendChild(image);
-    } else if (isInstructure) {
-      preview.classList.add('asset-icon-tile-preview-instructure');
-      preview.style.color = '#001E44';
-      preview.appendChild(buildInstructurePreviewIcon(icon));
     } else if (isPng) {
       preview.classList.add('asset-icon-tile-preview-custom');
       preview.style.background = previewColor;
@@ -975,34 +973,6 @@ function getAssetIconSearchText(icon) {
   ].filter(Boolean).join(' ').toLowerCase();
 }
 
-function buildInstructurePreviewIcon(icon) {
-  const iconClass = icon.iconClass || `icon-${String(icon.key).replace(/^instructure-/, '')}`;
-  const previewData = window.CEI_INSTRUCTURE_ICON_PREVIEWS && window.CEI_INSTRUCTURE_ICON_PREVIEWS[iconClass];
-
-  if (!previewData || !Array.isArray(previewData.paths)) {
-    const glyph = document.createElement('i');
-    glyph.className = `${iconClass} icon-lg`;
-    glyph.style.setProperty('color', '#001E44', 'important');
-    glyph.setAttribute('aria-hidden', 'true');
-    return glyph;
-  }
-
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', previewData.viewBox || '0 0 1920 1920');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('focusable', 'false');
-
-  previewData.paths.forEach((pathData) => {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathData.d);
-    path.setAttribute('fill', 'currentColor');
-    if (pathData.fillRule) path.setAttribute('fill-rule', pathData.fillRule);
-    if (pathData.clipRule) path.setAttribute('clip-rule', pathData.clipRule);
-    svg.appendChild(path);
-  });
-
-  return svg;
-}
 
 function selectAssetIcon(iconKey) {
   selectedAssetIconKey = iconKey;
@@ -1124,68 +1094,6 @@ function recolorSvgForInlineInsert(svgText, color, size) {
     .replace(/\sstroke="(?!none|transparent|currentColor)[^"]*"/gi, ` stroke="${color}"`);
 }
 
-function buildInstructureAssetIconHtml(iconClass, color, sizeKey = 'medium') {
-  const safeClass = escapeHtmlAttribute(iconClass);
-  const safeColor = escapeHtmlAttribute(color || '#001E44');
-  const normalizedSizeKey = typeof sizeKey === 'number'
-    ? (sizeKey >= 64 ? 'large' : sizeKey <= 36 ? 'small' : 'medium')
-    : sizeKey;
-  const glyphSizes = {
-    small: 30,
-    medium: 42,
-    large: 60
-  };
-  const glyph = glyphSizes[normalizedSizeKey] || glyphSizes.medium;
-  const wrapperStyle = [
-    'display:inline-flex',
-    'align-items:center',
-    'justify-content:center',
-    `width:${glyph}px`,
-    `height:${glyph}px`,
-    'line-height:1',
-    'vertical-align:middle',
-    'margin-right:8px',
-    'overflow:visible',
-    'flex:0 0 auto'
-  ].join(';');
-
-  // Emit a real inline <svg> mirroring buildInstructurePreviewIcon: sized in
-  // actual pixels and colored via fill, so it renders identically in the editor
-  // and the saved/published view with no ::before, transform, or CSS dependency.
-  const previewData = window.CEI_INSTRUCTURE_ICON_PREVIEWS && window.CEI_INSTRUCTURE_ICON_PREVIEWS[iconClass];
-  if (previewData && Array.isArray(previewData.paths)) {
-    const viewBox = previewData.viewBox || '0 0 1920 1920';
-    const paths = previewData.paths.map((pathData) => {
-      const attrs = [`d="${pathData.d}"`, `fill="${safeColor}"`];
-      if (pathData.fillRule) attrs.push(`fill-rule="${pathData.fillRule}"`);
-      if (pathData.clipRule) attrs.push(`clip-rule="${pathData.clipRule}"`);
-      return `<path ${attrs.join(' ')}/>`;
-    }).join('');
-    const svgStyle = [
-      `width:${glyph}px`,
-      `height:${glyph}px`,
-      'max-width:none',
-      'display:inline-block',
-      'vertical-align:middle',
-      'flex:0 0 auto'
-    ].join(';');
-    return `<span style="${wrapperStyle};"><svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${glyph}" height="${glyph}" aria-hidden="true" focusable="false" style="${svgStyle};">${paths}</svg></span>`;
-  }
-
-  // Fallback for any icon missing from the preview map: render the font glyph,
-  // scaled up via transform since Canvas pins the ::before to 1rem (16px).
-  const scale = glyph / 16;
-  const iconStyle = [
-    'font-size:16px',
-    'line-height:1',
-    `color:${safeColor}`,
-    'display:inline-block',
-    'vertical-align:middle',
-    `transform:scale(${scale})`,
-    'transform-origin:center'
-  ].join(';');
-  return `<span style="${wrapperStyle};"><i class="${safeClass} icon-lg" style="${iconStyle};" aria-hidden="true"></i></span>`;
-}
 
 async function buildSelectedAssetHtml() {
   if (selectedAssetKind === 'buttons') return buildAssetButtonHtml();
@@ -1197,7 +1105,6 @@ async function buildSelectedAssetHtml() {
   if (!iconEntry) return '';
 
   const type = (iconEntry.type || '').toLowerCase();
-  const isInstructure = type === 'instructure' || iconEntry.collection === 'instructure';
   const isPng = type === 'png' || /\.png$/i.test(iconEntry.path || '');
 
   if (iconEntry.collection === 'general' || iconEntry.collection === 'icon-banners' || iconEntry.collection === 'fill-icons') {
@@ -1220,12 +1127,6 @@ async function buildSelectedAssetHtml() {
     }
 
     return `<img src="${escapeHtmlAttribute(url)}" alt="" aria-hidden="true" width="32" height="32" style="width:32px;height:32px;max-width:none;display:inline-block;vertical-align:middle;margin-right:8px;">`;
-  }
-
-  if (isInstructure) {
-    const color = selectedAssetColor || '#001E44';
-    const iconClass = iconEntry.iconClass || `icon-${iconKey.replace(/^instructure-/, '')}`;
-    return buildInstructureAssetIconHtml(iconClass, color, selectedAssetInstructureIconSize);
   }
 
   const url = getCeiSvgUrl(iconKey);
@@ -1266,9 +1167,7 @@ function setupAssetOptions() {
       button.classList.toggle('is-selected', isSelected);
       button.setAttribute('aria-checked', String(isSelected));
     });
-    setStatus(isButtons
-      ? 'Choose button options, then Insert Asset.'
-      : 'Choose an icon, then Insert Asset.', false);
+    setStatus('', false);
   };
 
   if (assetKindButtons.length) {
@@ -1350,8 +1249,7 @@ function setupAssetOptions() {
       populateAssetIconVariantSelect(assetIconCollectionSelect.value);
       populateAssetIconCategorySelect(assetIconCollectionSelect.value);
       populateAssetIconSelect();
-      const label = assetIconCollectionSelect.options[assetIconCollectionSelect.selectedIndex].text;
-      setStatus(`Asset Library set to ${label}. Choose an icon, then Insert Asset.`, false);
+      setStatus('', false);
     });
   }
 
@@ -1362,19 +1260,12 @@ function setupAssetOptions() {
     });
   }
 
-  if (assetInstructureIconSizeSelect) {
-    selectedAssetInstructureIconSize = assetInstructureIconSizeSelect.value || 'medium';
-    assetInstructureIconSizeSelect.addEventListener('change', () => {
-      selectedAssetInstructureIconSize = assetInstructureIconSizeSelect.value || 'medium';
-    });
-  }
 
   if (assetIconVariantSelect) {
     selectedAssetIconVariant = assetIconVariantSelect.value || 'dark';
     assetIconVariantSelect.addEventListener('change', () => {
       selectedAssetIconVariant = assetIconVariantSelect.value;
-      const label = assetIconVariantSelect.options[assetIconVariantSelect.selectedIndex].text;
-      setStatus(`Icons will insert in the ${label} color.`, false);
+      setStatus('', false);
     });
   }
 
@@ -1422,8 +1313,7 @@ function setupElementOptions() {
 
   elementCategorySelect.addEventListener('change', () => {
     filterElementsByCategory();
-    const label = elementCategorySelect.options[elementCategorySelect.selectedIndex].text;
-    setStatus(`Showing ${label} elements. Choose an element to paste into Canvas.`, false);
+    setStatus('', false);
   });
 
   filterElementsByCategory();
@@ -1700,14 +1590,14 @@ function openLayoutOptions(layoutKey) {
   if (layoutMainView) layoutMainView.hidden = true;
   if (layoutOptionsView) layoutOptionsView.hidden = false;
   updateLayoutPreview();
-  setStatus('Customize the selected layout, then choose Insert Layout.', false);
+  setStatus('', false);
 }
 
 function closeLayoutOptions() {
   selectedLayoutKey = null;
   if (layoutOptionsView) layoutOptionsView.hidden = true;
   if (layoutMainView) layoutMainView.hidden = false;
-  setStatus('Choose a layout, then customize options before inserting into Canvas.', false);
+  setStatus('', false);
 }
 
 function applyLayoutOptionsToHtml(html) {
@@ -2129,14 +2019,14 @@ function openElementOptions(elementKey) {
 
   if (elementMainView) elementMainView.hidden = true;
   if (elementOptionsView) elementOptionsView.hidden = false;
-  setStatus('Customize the selected element, then choose Insert Element.', false);
+  setStatus('', false);
 }
 
 function closeElementOptions() {
   selectedElementKey = null;
   if (elementOptionsView) elementOptionsView.hidden = true;
   if (elementMainView) elementMainView.hidden = false;
-  setStatus('Choose an element to paste into Canvas.', false);
+  setStatus('', false);
 }
 
 function applyElementOptionsToHtml(html) {
@@ -2200,11 +2090,6 @@ async function fetchCeiSvgIcon(iconKey, color = '#001E44', size = 50) {
 
   const url = getCeiSvgUrl(iconKey);
   const type = (entry.type || '').toLowerCase();
-
-  if (type === 'instructure' || entry.collection === 'instructure') {
-    const iconClass = entry.iconClass || `icon-${String(iconKey).replace(/^instructure-/, '')}`;
-    return buildInstructureAssetIconHtml(iconClass, color, size, false);
-  }
 
   if (type === 'png' || /\.png$/i.test(entry.path || '')) {
     return `<img src="${url}" alt="" aria-hidden="true" width="65" style="height:65px;width:auto;max-width:none;display:inline-block;vertical-align:middle;flex:0 0 auto;">`;
@@ -2439,16 +2324,72 @@ function setupElementOptionsPanel() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Grid/list view for the card panels. The compact list drops the thumbnail and
+// shows two items per row, so a panel fits with far less scrolling. One shared
+// preference drives Layouts, Elements and My Stuff together.
+// ---------------------------------------------------------------------------
+const LAYOUT_VIEW_KEY = 'ceiLayoutView';
+const CARD_GRID_IDS = ['layoutsPanel', 'interactivePanel', 'myStuffGrid'];
+
+function applyLayoutView(view) {
+  const isList = view === 'list';
+  CARD_GRID_IDS.forEach((id) => {
+    const grid = document.getElementById(id);
+    // The class sits on the container, so it survives My Stuff re-rendering.
+    if (grid) grid.classList.toggle('is-list', isList);
+  });
+  document.querySelectorAll('.layout-view-button').forEach((button) => {
+    const selected = (button.dataset.layoutView === 'list') === isList;
+    button.classList.toggle('is-selected', selected);
+    button.setAttribute('aria-checked', String(selected));
+  });
+}
+
+function setupLayoutViewToggle() {
+  const buttons = Array.from(document.querySelectorAll('.layout-view-button'));
+  if (!buttons.length) return;
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const view = button.dataset.layoutView === 'list' ? 'list' : 'grid';
+      applyLayoutView(view);
+      try { chrome.storage.local.set({ [LAYOUT_VIEW_KEY]: view }); } catch (error) {}
+    });
+  });
+
+  // Remember the choice between popup sessions.
+  try {
+    chrome.storage.local.get(LAYOUT_VIEW_KEY)
+      .then((stored) => applyLayoutView(stored[LAYOUT_VIEW_KEY] === 'list' ? 'list' : 'grid'))
+      .catch(() => applyLayoutView('grid'));
+  } catch (error) {
+    applyLayoutView('grid');
+  }
+}
+
 function showPanel(index) {
   const panelCount = slider ? slider.children.length : 5;
   if (index === 3) ensureAssetIconGridInitialized();
   slider.style.transform = `translateX(-${index * (100 / panelCount)}%)`;
+
+  // The slider lays every panel out in one flex row, so without this the popup
+  // is always as tall as the tallest panel. Collapsing the inactive ones lets
+  // Chrome size the popup to the panel actually on screen.
+  if (slider) {
+    slider.classList.add('has-active-panel');
+    Array.from(slider.children).forEach((panel, panelIndex) => {
+      panel.classList.toggle('is-active-panel', panelIndex === index);
+    });
+  }
+  window.scrollTo({ top: 0 });
   document.querySelectorAll('.panel-tab').forEach((tab) => {
     const isActive = Number(tab.dataset.panel) === index;
     tab.classList.toggle('is-active', isActive);
     tab.setAttribute('aria-selected', String(isActive));
   });
-  setStatus(panelMessages[index], false);
+  // Panel instructions were removed; the bar is only for real feedback now.
+  setStatus('', false);
 }
 
 async function pasteLayout(layoutKey, options = {}) {
@@ -2482,440 +2423,6 @@ async function pasteLayout(layoutKey, options = {}) {
   await pasteCustomHtml(shouldWrapContent ? wrapContentInsertSpacing(html) : html, `${item ? item.title : 'Content'} pasted into the Canvas editor.`);
 }
 
-
-async function getSavedAiStudioTab() {
-  try {
-    const result = await chrome.storage.local.get('aiStudioTabId');
-    const savedTabId = result.aiStudioTabId;
-
-    if (!savedTabId) return null;
-
-    const tab = await chrome.tabs.get(savedTabId);
-
-    if (tab && tab.id) {
-      return tab;
-    }
-
-    return null;
-  } catch (error) {
-    await chrome.storage.local.remove('aiStudioTabId');
-    return null;
-  }
-}
-
-async function focusTab(tab) {
-  if (!tab || !tab.id) return false;
-
-  try {
-    await chrome.tabs.update(tab.id, { active: true });
-
-    if (typeof tab.windowId === 'number') {
-      await chrome.windows.update(tab.windowId, { focused: true });
-    }
-
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function createAndSaveAiStudioTab() {
-  const tab = await chrome.tabs.create({ url: AI_STUDIO_URL });
-
-  if (tab && tab.id) {
-    await chrome.storage.local.set({ aiStudioTabId: tab.id });
-  }
-
-  return tab;
-}
-
-async function openAiStudio() {
-  const savedTab = await getSavedAiStudioTab();
-
-  if (savedTab) {
-    const focused = await focusTab(savedTab);
-
-    if (focused) {
-      showAiCopyStatus('Open AI Studio using the button above.');
-      return;
-    }
-
-    await chrome.storage.local.remove('aiStudioTabId');
-  }
-
-  await createAndSaveAiStudioTab();
-}
-
-async function copyPromptAndOpenAiStudio(prompt, title) {
-  await navigator.clipboard.writeText(prompt);
-
-  const savedTab = await getSavedAiStudioTab();
-
-  if (savedTab) {
-    const focused = await focusTab(savedTab);
-
-    if (focused) {
-      showAiCopyStatus(`Copied "${title}" prompt and focused your saved AI Studio tab.`);
-      return;
-    }
-
-    await chrome.storage.local.remove('aiStudioTabId');
-  }
-
-  await createAndSaveAiStudioTab();
-  showAiCopyStatus(`Copied "${title}" prompt. Open AI Studio using the button above and paste the copied prompt.`);
-}
-
-const aiStudioPrompts = [
-  {
-    title: 'Canvas Page Builder',
-    category: 'Canvas Pages',
-    desc: 'Generate a Canvas page from learning objectives.',
-    prompt: `Create a Canvas LMS page for the following topic:
-[course topic]
-
-Audience:
-[student audience]
-
-Learning objectives:
-- [objective 1]
-- [objective 2]
-- [objective 3]
-
-Use a friendly, student-centered tone. Include an H2 title, a short overview, clear sections, and concise directions. Keep the content easy to scan.`
-  },
-  {
-    title: 'Layout Recommender',
-    category: 'Canvas Pages',
-    desc: 'Recommend the best PSU Canvas Style Guide layout.',
-    prompt: `I am using the PSU Canvas Style Guide Chrome Extension. Recommend the best layout for this Canvas content need:
-
-[describe the page, module, activity, or content]
-
-Available layout categories:
-- Pages: Hero + 3 Cards, Two Column Guide
-- Columns: Two Columns, Three Columns, Four Columns
-- Images: Full Image + Caption, Text + Image Right, Image Left + Text
-
-Explain which layout is best and why.`
-  },
-  {
-    title: 'Module Introduction',
-    category: 'Module Design',
-    desc: 'Create a module overview.',
-    prompt: `Create a Canvas module introduction for:
-[module topic]
-
-Use a friendly tone. Include:
-- A brief overview
-- 3 learning objectives
-- A short "What to do this week" checklist
-- A reminder about where students should submit work`
-  },
-  {
-    title: 'Discussion Prompt',
-    category: 'Assessment',
-    desc: 'Generate discussion questions.',
-    prompt: `Create a Canvas discussion prompt for:
-[topic]
-
-Include:
-- A short setup paragraph
-- One main discussion question
-- Two follow-up questions
-- Student reply expectations
-- A reminder to support claims with course materials`
-  },
-  {
-    title: 'Knowledge Check',
-    category: 'Assessment',
-    desc: 'Create low-stakes quiz questions.',
-    prompt: `Create a short Canvas knowledge check for:
-[topic]
-
-Include:
-- 5 multiple-choice questions
-- 4 answer choices per question
-- Correct answer
-- Brief feedback for each question
-Keep the tone supportive and low-stakes.`
-  },
-  {
-    title: 'Accessibility Review',
-    category: 'Accessibility',
-    desc: 'Review content for accessibility.',
-    prompt: `Review the following Canvas page content for accessibility issues:
-
-[paste content here]
-
-Check for:
-- Heading structure
-- Link text clarity
-- Image alt text needs
-- Table/accessibility concerns
-- Reading clarity
-- Color or visual-only instructions
-
-Return a short prioritized list of fixes.`
-  },
-  {
-    title: 'Course Welcome',
-    category: 'Course Design',
-    desc: 'Generate welcome page content.',
-    prompt: `Create a welcoming Canvas course introduction for:
-[course name]
-
-Include:
-- A warm welcome message
-- What students can expect
-- How to get started
-- How to contact the instructor
-- A short success tip`
-  },
-  {
-    title: 'Learning Objectives',
-    category: 'Course Design',
-    desc: 'Write measurable objectives.',
-    prompt: `Write measurable learning objectives for:
-[topic or module]
-
-Create 3-5 objectives using clear action verbs. Keep them student-friendly and aligned with college-level learning.`
-  },
-  {
-    title: 'Assignment Overview',
-    category: 'Assessment',
-    desc: 'Explain an assignment clearly.',
-    prompt: `Create a Canvas assignment overview for:
-[assignment name]
-
-Include:
-- Purpose
-- Steps to complete
-- What to submit
-- Evaluation criteria
-- Due date placeholder
-Use clear student-facing language.`
-  },
-  {
-    title: 'Weekly Checklist',
-    category: 'Module Design',
-    desc: 'Create a student task list.',
-    prompt: `Create a weekly Canvas checklist for:
-[week/module topic]
-
-Include:
-- Review items
-- Practice activities
-- Discussion or assignment tasks
-- Submission reminders
-Keep it concise and easy to scan.`
-  },
-  {
-    title: 'Rewrite for Students',
-    category: 'Course Design',
-    desc: 'Make content clearer and friendlier.',
-    prompt: `Rewrite the following Canvas content so it is clearer, friendlier, and easier for students to follow:
-
-[paste content here]
-
-Keep the meaning the same. Use short paragraphs, clear headings, and direct instructions.`
-  },
-  {
-    title: 'Alt Text Helper',
-    category: 'Multimedia',
-    desc: 'Draft accessible image alt text.',
-    prompt: `Write accessible alt text for this image:
-[describe image or paste context]
-
-Also provide:
-- Decorative alt option if the image is decorative
-- A longer description option if the image contains important details`
-  },
-  {
-    title: 'Video Summary Prompt',
-    category: 'Multimedia',
-    desc: 'Create student-facing context for a course video.',
-    prompt: `Create a short Canvas video introduction for:
-[video topic or title]
-
-Include:
-- Why students are watching it
-- What to pay attention to
-- 2 reflection questions
-- A short follow-up activity`
-  },
-  {
-    title: 'Image-Based Activity',
-    category: 'Multimedia',
-    desc: 'Turn an image into a learning activity.',
-    prompt: `Create a Canvas learning activity around this image:
-[describe image]
-
-Include:
-- A short introduction
-- Observation prompts
-- Analysis questions
-- A brief reflection task`
-  }
-];
-
-const localLayoutRecommendations = [
-  {
-    title: 'Hero + 3 Cards',
-    category: 'Pages',
-    keywords: ['welcome', 'start', 'home', 'overview', 'intro', 'introduction', 'quick links', 'landing', 'module'],
-    reason: 'Use this when you need a strong opening section with three quick actions, links, or next steps.'
-  },
-  {
-    title: 'Two Column Guide',
-    category: 'Pages',
-    keywords: ['guide', 'instructions', 'overview', 'callout', 'reminder', 'note', 'explain', 'directions'],
-    reason: 'Use this when you want main content beside a reminder, note, or callout panel.'
-  },
-  {
-    title: 'Two Columns',
-    category: 'Columns',
-    keywords: ['two', '2', 'compare', 'comparison', 'side by side', 'left right', 'pros cons'],
-    reason: 'Use this for two equal content areas that should stack on smaller screens.'
-  },
-  {
-    title: 'Three Columns',
-    category: 'Columns',
-    keywords: ['three', '3', 'steps', 'options', 'choices', 'three sections'],
-    reason: 'Use this for three short sections, steps, resources, or choices.'
-  },
-  {
-    title: 'Four Columns',
-    category: 'Columns',
-    keywords: ['four', '4', 'resources', 'categories', 'topics', 'cards'],
-    reason: 'Use this for four compact items, categories, resource links, or topic cards.'
-  },
-  {
-    title: 'Full Image + Caption',
-    category: 'Images',
-    keywords: ['image', 'caption', 'photo', 'diagram', 'visual', 'banner', 'full image'],
-    reason: 'Use this for a large visual, diagram, featured image, or banner with a caption.'
-  },
-  {
-    title: 'Text + Image Right',
-    category: 'Images',
-    keywords: ['image right', 'text left', 'reflection', 'prompt', 'picture right'],
-    reason: 'Use this when the text should lead and the supporting image should appear on the right.'
-  },
-  {
-    title: 'Image Left + Text',
-    category: 'Images',
-    keywords: ['image left', 'text right', 'picture left', 'reading', 'visual left'],
-    reason: 'Use this when an image should introduce or anchor text on the right.'
-  }
-];
-
-function renderAiStudioPrompts() {
-  const container = document.getElementById('aiStudioPromptGrid');
-  if (!container) return;
-  container.innerHTML = '';
-
-  aiStudioPrompts.forEach((item) => {
-    const card = document.createElement('div');
-    card.className = 'prompt-card';
-    card.dataset.searchText = `${item.title} ${item.category} ${item.desc} ${item.prompt}`.toLowerCase();
-    card.dataset.category = item.category;
-
-    const category = document.createElement('span');
-    category.className = 'prompt-category';
-    category.textContent = item.category;
-
-    const title = document.createElement('strong');
-    title.textContent = item.title;
-
-    const desc = document.createElement('p');
-    desc.textContent = item.desc;
-
-    const preview = document.createElement('div');
-    preview.className = 'prompt-preview';
-    preview.textContent = item.prompt;
-
-    const actions = document.createElement('div');
-    actions.className = 'prompt-actions';
-
-    const copyButton = document.createElement('button');
-    copyButton.type = 'button';
-    copyButton.textContent = 'Copy Prompt';
-    copyButton.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(item.prompt);
-      showAiCopyStatus(`Copied "${item.title}" prompt. Open AI Studio using the button above and paste it into the chat.`);
-    });
-
-    actions.appendChild(copyButton);
-
-    card.appendChild(category);
-    card.appendChild(title);
-    card.appendChild(desc);
-    card.appendChild(preview);
-    card.appendChild(actions);
-
-    container.appendChild(card);
-  });
-
-  filterAiPromptCards();
-}
-
-function showAiCopyStatus(message) {
-  const container = document.getElementById('aiStudioPromptGrid');
-  if (!container) return;
-
-  let status = container.querySelector('.copy-status');
-  if (!status) {
-    status = document.createElement('div');
-    status.className = 'copy-status';
-    container.prepend(status);
-  }
-
-  status.textContent = message;
-  setTimeout(() => {
-    if (status && status.parentNode) status.remove();
-  }, 3500);
-}
-
-function filterAiPromptCards() {
-  const input = document.getElementById('aiPromptSearch');
-  const categorySelect = document.getElementById('aiPromptCategory');
-  const container = document.getElementById('aiStudioPromptGrid');
-  if (!container) return;
-
-  const query = input ? normalizeSearchText(input.value) : '';
-  const category = categorySelect ? categorySelect.value : 'all';
-  const cards = Array.from(container.querySelectorAll('.prompt-card'));
-  let visibleCount = 0;
-
-  cards.forEach((card) => {
-    const matchesSearch = !query || (card.dataset.searchText || '').includes(query);
-    const matchesCategory = category === 'all' || card.dataset.category === category;
-    const isVisible = matchesSearch && matchesCategory;
-    card.classList.toggle('is-hidden', !isVisible);
-    if (isVisible) visibleCount += 1;
-  });
-
-  let noResults = container.querySelector('.no-results');
-  if (!visibleCount) {
-    if (!noResults) {
-      noResults = document.createElement('div');
-      noResults.className = 'no-results';
-      noResults.textContent = 'No matching AI prompts found.';
-      container.appendChild(noResults);
-    }
-  } else if (noResults) {
-    noResults.remove();
-  }
-}
-
-function setupAiPromptSearch() {
-  const input = document.getElementById('aiPromptSearch');
-  const categorySelect = document.getElementById('aiPromptCategory');
-
-  if (input) input.addEventListener('input', filterAiPromptCards);
-  if (categorySelect) categorySelect.addEventListener('change', filterAiPromptCards);
-}
 
 function scoreLocalLayout(text, item) {
   const query = normalizeSearchText(text);
@@ -3085,10 +2592,9 @@ setupElementOptionsPanel();
 
 
 setupAssetOptions();
+setupLayoutViewToggle();
 loadRecentInserts();
 syncColorToggleSummaries();
-renderAiStudioPrompts();
-setupAiPromptSearch();
 setupAiLayoutRecommender();
 
 if (layoutCategory) {

@@ -2,7 +2,7 @@ window.PSU_CANVAS_ITEMS = [
 
   { panel: 'layouts', layoutGroup: 'full-pages', key: 'courseIntroductionNew', title: 'Course Introduction', desc: 'Comprehensive course welcome page', preview: 'hero', html: `<div style="width: 100%; margin: 0; padding: 0; line-height: 1.6; color: #222222;">
     <div style="background: #f7f9fb; padding: 40px 24px; text-align: center; border-radius: 8px; margin: 0px 0px 30px; overflow: hidden; border: 1px solid #e1e6eb;">
-        <h1 style="margin: 0; font-size: 2em;">Welcome to ABC 123: Course Name</h1>
+        <h2 style="margin: 0; font-size: 2em;">Welcome to ABC 123: Course Name</h2>
         <p style="margin: 10px auto 0; max-width: 800px; font-size: 1.1em;">Brief course description</p>
     </div>
     <div style="width: 100%; margin: 0 auto; padding: 0;">
