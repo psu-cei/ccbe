@@ -2,12 +2,14 @@
    My Stuff panel + folder page
    ------------------------------------------------------------------------ */
 
-/* Five tabs, five panels: Search, Layouts, Elements, Asset Library, My Stuff. */
-.panel-slider { width: 500% !important; }
-.style-panel { width: 20% !important; }
+/* Six tabs, six panels: Search, Layouts, Elements, Assets, My Stuff,
+   Team Stuff. Keep these three in step with popup.js showPanel() if a panel
+   is ever added or removed. */
+.panel-slider { width: 600% !important; }
+.style-panel { width: 16.6667% !important; }
 .panel-controls.cei-tab-navigation,
 .cei-tab-navigation {
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
 }
 
 .ms-toolbar {
@@ -257,7 +259,7 @@ body.ms-folder-page {
 }
 
 /* ------------------------------------------------------------------------
-   Team sharing (export / import) inside Folder settings
+   File sharing (export / import) inside Folder settings
    ------------------------------------------------------------------------ */
 .ms-share-heading {
   margin: 0 0 6px;
@@ -328,7 +330,7 @@ body.ms-folder-page {
   vertical-align: middle;
 }
 
-/* Add-form header: title on the left, Team Sharing on the right */
+/* Add-form header: title on the left, File sharing on the right */
 .ms-form-head {
   display: flex;
   align-items: center;
@@ -343,7 +345,7 @@ body.ms-folder-page {
 
 .ms-form-head .options-copy-button[hidden] { display: none; }
 
-/* Team Sharing reads as the one accent action on this view. */
+/* File sharing reads as the one accent action on this view. */
 #myStuffSharingButton {
   border-color: #e6bd00;
   background: var(--gold, #FFD100);
@@ -358,3 +360,74 @@ body.ms-folder-page {
   outline: 2px solid rgba(255, 209, 0, .45);
   outline-offset: 1px;
 }
+
+/* ------------------------------------------------------------------------
+   Team Stuff panel
+   ------------------------------------------------------------------------ */
+
+.ts-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+#teamStuffStatusText { min-width: 0; }
+
+/* Share toggle on a My Stuff item. Reads as a state, not a destructive
+   action, so it sits apart from Insert / Edit / Remove. */
+.ms-share-toggle-row {
+  margin: 16px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.ms-share-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ms-share-toggle::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  flex: 0 0 auto;
+}
+
+.ms-share-toggle[aria-pressed="true"] {
+  border-color: #1f7a3d;
+  background: #eaf6ee;
+  color: #14532d;
+}
+
+.ms-share-toggle[aria-pressed="true"]::before { background: #1f7a3d; }
+
+.ms-share-toggle:hover:not(:disabled),
+.ms-share-toggle:focus-visible:not(:disabled) {
+  border-color: var(--psu-bright-blue);
+  outline: 2px solid rgba(47, 129, 211, .25);
+  outline-offset: 1px;
+}
+
+.ms-share-toggle:disabled { opacity: .6; cursor: default; }
+
+.ms-share-toggle-row .ms-share-note { margin: 8px 0 0; }

@@ -135,11 +135,32 @@ const ASSET_ICON_VARIANT_OPTIONS = {
     { value: 'dark', label: 'Dark', dir: 'Dark' },
     { value: 'light', label: 'Light', dir: 'Light' }
   ],
-  // Fill Icons ship in a single Color style; subfolders are categories, not variants.
+  // Fill Icons nest the variant BELOW the category, not above it:
+  //   Fill Icons/Arrows/Arrow Down.png         Color
+  //   Fill Icons/Arrows/Dark/Arrow Down.png    Dark
+  // So the dir is inserted before the file name rather than swapped for the
+  // base one. See buildFillIconVariantPath.
   'fill-icons': [
-    { value: 'color', label: 'Color', dir: '' }
+    { value: 'color', label: 'Color', dir: '' },
+    { value: 'dark', label: 'Dark', dir: 'Dark' },
+    { value: 'light', label: 'Light', dir: 'Light' }
   ]
 };
+
+// Returns the path for the chosen variant, and whether that variant actually
+// exists. Not every Fill Icon has all three: 15 have no Dark and 3 no Light,
+// so asking for one of those has to fall back rather than emit a URL that
+// 404s inside a published Canvas page.
+function buildFillIconVariantPath(iconEntry, variantValue) {
+  const dir = getAssetIconVariantDir('fill-icons', variantValue);
+  const available = Array.isArray(iconEntry.variants) ? iconEntry.variants : ['color'];
+  if (!dir || !available.includes(variantValue)) {
+    return { path: String(iconEntry.path), usedVariant: 'color', fellBack: Boolean(dir) };
+  }
+  const parts = String(iconEntry.path).split('/');
+  const file = parts.pop();
+  return { path: `${parts.join('/')}/${dir}/${file}`, usedVariant: variantValue, fellBack: false };
+}
 
 function getAssetIconVariantOptions(collection) {
   return ASSET_ICON_VARIANT_OPTIONS[collection] || ASSET_ICON_VARIANT_OPTIONS.general;
@@ -1108,11 +1129,20 @@ async function buildSelectedAssetHtml() {
   const isPng = type === 'png' || /\.png$/i.test(iconEntry.path || '');
 
   if (iconEntry.collection === 'general' || iconEntry.collection === 'icon-banners' || iconEntry.collection === 'fill-icons') {
-    const baseDir = getAssetIconVariantOptions(iconEntry.collection)[0].dir;
-    const variantDir = getAssetIconVariantDir(iconEntry.collection, selectedAssetIconVariant);
-    const variantPath = (baseDir && variantDir && baseDir !== variantDir)
-      ? String(iconEntry.path).replace(`/${baseDir}/`, `/${variantDir}/`)
-      : String(iconEntry.path);
+    let variantPath;
+    if (iconEntry.collection === 'fill-icons') {
+      const resolved = buildFillIconVariantPath(iconEntry, selectedAssetIconVariant);
+      variantPath = resolved.path;
+      if (resolved.fellBack) {
+        setStatus(`${iconEntry.label} has no ${selectedAssetIconVariant} version, so the Color one was inserted.`, false);
+      }
+    } else {
+      const baseDir = getAssetIconVariantOptions(iconEntry.collection)[0].dir;
+      const variantDir = getAssetIconVariantDir(iconEntry.collection, selectedAssetIconVariant);
+      variantPath = (baseDir && variantDir && baseDir !== variantDir)
+        ? String(iconEntry.path).replace(`/${baseDir}/`, `/${variantDir}/`)
+        : String(iconEntry.path);
+    }
     const encodedPath = variantPath.split('/').map((part) => encodeURIComponent(part)).join('/');
     const url = `${CEI_PUBLIC_ASSET_BASE}/${encodedPath}`;
 
@@ -1154,7 +1184,7 @@ function setupAssetOptions() {
   if (assetCustomColorHex) assetCustomColorHex.value = selectedAssetColor;
   if (assetButtonCustomColor) assetButtonCustomColor.value = selectedAssetButtonColor;
   if (assetButtonCustomColorHex) assetButtonCustomColorHex.value = selectedAssetButtonColor;
-  // Icon grid rendering is deferred until the Asset Library panel is opened,
+  // Icon grid rendering is deferred until the Assets panel is opened,
   // so the popup paints instantly instead of waiting on ~386 remote images.
 
   const updateAssetKind = (kind = selectedAssetKind) => {
@@ -2330,7 +2360,7 @@ function setupElementOptionsPanel() {
 // preference drives Layouts, Elements and My Stuff together.
 // ---------------------------------------------------------------------------
 const LAYOUT_VIEW_KEY = 'ceiLayoutView';
-const CARD_GRID_IDS = ['layoutsPanel', 'interactivePanel', 'myStuffGrid'];
+const CARD_GRID_IDS = ['layoutsPanel', 'interactivePanel', 'myStuffGrid', 'teamStuffGrid'];
 
 function applyLayoutView(view) {
   const isList = view === 'list';
@@ -2369,8 +2399,10 @@ function setupLayoutViewToggle() {
 }
 
 function showPanel(index) {
-  const panelCount = slider ? slider.children.length : 5;
+  const panelCount = slider ? slider.children.length : 6;
   if (index === 3) ensureAssetIconGridInitialized();
+  // Team Stuff talks to GitHub, so it only loads once the user opens it.
+  if (index === 5 && window.CCBETeamStuffUI) window.CCBETeamStuffUI.onShow();
   slider.style.transform = `translateX(-${index * (100 / panelCount)}%)`;
 
   // The slider lays every panel out in one flex row, so without this the popup

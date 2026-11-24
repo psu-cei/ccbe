@@ -113,27 +113,79 @@ writeLibrary('icon-banners-icon-library.js', 'CEI_ICON_BANNERS_LIBRARY', bannerE
   'Icon Banners collection (Color/Dark/Light PNG variants). Path points at Color; Dark and Light live in sibling directories with the same filename.');
 
 // --- Fill Icons ------------------------------------------------------------
-// Single "Color" variant; categories come from the subfolder names.
+// Categories come from the subfolder names, and each category holds its Color
+// PNGs directly plus optional Dark/ and Light/ subfolders. That is the reverse
+// of General and Icon Banners, where the variant sits ABOVE the file, so an
+// insert has to add a path segment here rather than swap one.
+//
+// Only the Color files are packaged with the extension, because the grid
+// previews Color and inserts always load from the GitHub repo. Dark and Light
+// are therefore looked for in the repo checkout one level up when it is there,
+// so the generated library can record which variants each icon really has.
+// CCBE_ICON_SOURCE can point at the repo checkout holding the full icon tree
+// when it is not simply the parent of this folder.
 const fillDir = path.join(ROOT, 'assets/icons/collections/Fill Icons');
+const fillVariantRoots = [
+  fillDir,
+  path.join(ROOT, '..', 'assets/icons/collections/Fill Icons'),
+  ...(process.env.CCBE_ICON_SOURCE
+    ? [path.join(process.env.CCBE_ICON_SOURCE, 'assets/icons/collections/Fill Icons')]
+    : [])
+];
+
+function fillVariantExists(subfolder, variant, file) {
+  return fillVariantRoots.some((root) => fs.existsSync(path.join(root, subfolder, variant, file)));
+}
+
 const fillEntries = [];
+const fillMissing = [];
+// "Science 2.png" and "Science_2.png" both slugify to science-2, and a repeated
+// key makes one of the two icons unreachable by lookup. Suffix any repeat.
+const fillSeenSlugs = new Map();
+function uniqueFillSlug(slug) {
+  const seen = fillSeenSlugs.get(slug) || 0;
+  fillSeenSlugs.set(slug, seen + 1);
+  return seen === 0 ? slug : `${slug}-${seen + 1}`;
+}
+
 fs.readdirSync(fillDir)
   .filter((entry) => fs.statSync(path.join(fillDir, entry)).isDirectory())
   .sort()
   .forEach((subfolder) => {
     listPngs(path.join(fillDir, subfolder)).forEach((file) => {
       const name = file.replace(/\.png$/i, '');
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const slug = uniqueFillSlug(name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
+      const variants = ['color'];
+      ['Dark', 'Light'].forEach((variant) => {
+        if (fillVariantExists(subfolder, variant, file)) variants.push(variant.toLowerCase());
+        else fillMissing.push(`${subfolder}/${variant}/${file}`);
+      });
       fillEntries.push({
         key: `fill-icons-${slug}`,
         label: name,
         path: `assets/icons/collections/Fill Icons/${subfolder}/${file}`,
         collection: 'fill-icons',
         category: subfolder,
-        type: 'png'
+        type: 'png',
+        // Which variants actually exist. The popup falls back to Color and
+        // says so rather than inserting a URL that 404s in a Canvas page.
+        variants
       });
     });
   });
+
+const fillDuplicates = fillEntries
+  .map((entry) => entry.key)
+  .filter((key, index, all) => all.indexOf(key) !== index);
+if (fillDuplicates.length) {
+  console.warn(`WARNING: duplicate Fill Icons keys (same filename in two categories): ${[...new Set(fillDuplicates)].join(', ')}`);
+}
+if (fillMissing.length) {
+  console.warn(`NOTE: ${fillMissing.length} Fill Icons variant file(s) absent; those icons fall back to Color on insert:`);
+  fillMissing.forEach((entry) => console.warn(`  ${entry}`));
+}
+
 writeLibrary('fill-icons-icon-library.js', 'CEI_FILL_ICONS_LIBRARY', fillEntries,
-  'Fill Icons collection (Color PNGs). Categories mirror the subfolder names.');
+  'Fill Icons collection. Path points at the Color file; Dark and Light live in a subfolder of the same category. Each entry lists the variants that exist.');
 
 console.log('Done. Remember to push any new/changed PNGs to the psu-cei/ccbe GitHub repo — inserted HTML loads them from there.');

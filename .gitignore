@@ -1,7 +1,14 @@
-.DS_Store
-
 # macOS system files
 .DS_Store
 **/.DS_Store
 .AppleDouble
 .LSOverride
+
+# Personal My Stuff items. This folder is whatever an individual connected as
+# their My Stuff sync target; the saved pages and elements in it belong to that
+# person, not to the extension, and this repo is public.
+PSU_Canvas_Style_Guide/assets/my-stuff/
+
+# Local editor and agent settings
+.claude/
+**/.claude/

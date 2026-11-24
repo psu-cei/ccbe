@@ -19,14 +19,14 @@
     <p class="ms-folder-note">Tip: when Chrome asks, choose <em>Allow on every visit</em> so the folder stays in sync without asking again. Disconnecting never deletes files.</p>`;
 
   const SHARING_MARKUP = `
-    <p class="ms-share-intro">Export your saved items as <code>.html</code> files to share with a teammate, or import files they sent you. When an item you already have comes in, the newer copy updates your files.</p>
+    <p class="ms-share-intro">Export your saved items as <code>.html</code> files to share with a teammate, or import new <code>.html</code> files. If an item you already have comes in, the newer copy replaces it.</p>
 
     <label class="ms-share-label" for="msAuthorName">Your name</label>
     <div class="ms-share-row">
       <input id="msAuthorName" data-ms="authorInput" type="text" maxlength="60" placeholder="e.g. Jaimen" autocomplete="off">
       <button data-ms="authorSave" class="options-copy-button" type="button">Save</button>
     </div>
-    <p class="ms-share-note">Stamped onto the files you export so teammates can see who made them. Stored only on this computer.</p>
+    <p class="ms-share-note">Added to the files you export so teammates can see who made them. Stored only on this computer.</p>
 
     <div class="ms-folder-actions">
       <button data-ms="export" class="layout-insert-button" type="button">Export to a folder…</button>
@@ -35,7 +35,7 @@
     </div>
     <input data-ms="fileInput" type="file" accept=".html,.htm" multiple hidden>
     <p data-ms="shareMessage" class="ms-folder-message" role="status" aria-live="polite"></p>
-    <p data-ms="popupNote" class="ms-share-note" hidden>If choosing files closes this window before the import finishes, <a href="#" data-ms="fullPageLink">open the full page</a> and try again there.</p>`;
+    <p data-ms="popupNote" class="ms-share-note" hidden>If this window closes while you are choosing files, <a href="#" data-ms="fullPageLink">open the full page</a> and import there instead.</p>`;
 
   function syncSummary(result) {
     if (!result.ok && !result.written && !result.deleted) return 'Could not write to the folder.';
@@ -150,7 +150,7 @@
     return { render, clearMessage: () => say('') };
   }
 
-  // ---- Team sharing -------------------------------------------------------
+  // ---- File sharing -------------------------------------------------------
   function mountSharing(root) {
     if (!store || !root) return null;
     root.innerHTML = SHARING_MARKUP;
@@ -240,7 +240,7 @@
   const standaloneSharing = document.getElementById('msSharingStandalone');
   if (standaloneSharing) {
     mountSharing(standaloneSharing);
-    // Opened from the popup's Team Sharing button: jump straight to it.
+    // Opened from the popup's File sharing button: jump straight to it.
     if (window.location.hash === '#team-sharing') {
       standaloneSharing.scrollIntoView({ block: 'start' });
     }

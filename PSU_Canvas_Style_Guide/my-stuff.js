@@ -41,6 +41,8 @@
   const insertButton = $('myStuffInsertButton');
   const copyButton = $('myStuffCopyButton');
   const removeButton = $('myStuffRemoveButton');
+  const shareToggle = $('myStuffShareToggle');
+  const shareNote = $('myStuffShareNote');
 
   const THUMB_IMAGE = 'assets/images/my-stuff-card.svg';
   let items = [];
@@ -197,9 +199,12 @@
     if (sharingButton) sharingButton.hidden = false;
     saveButton.textContent = 'Save';
     formBackButton.textContent = '← Back to My Stuff';
-    formPreview.srcdoc = previewDoc('<p style="color:#5f6f7a;">Paste HTML to see a preview.</p>');
     showView('add');
     titleInput.focus();
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => {
+      formPreview.srcdoc = previewDoc('<p style="color:#5f6f7a;">Paste HTML to see a preview.</p>');
+    }, 60);
   }
 
   function openEditForm(id) {
@@ -217,9 +222,12 @@
     if (sharingButton) sharingButton.hidden = true;
     saveButton.textContent = 'Save Changes';
     formBackButton.textContent = '← Back to item';
-    formPreview.srcdoc = previewDoc(item.html);
     showView('add');
     titleInput.focus();
+    // Same reason as the detail view: an embed assigned while this form is
+    // still hidden never loads. Show the view first, then fill the preview.
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => { formPreview.srcdoc = previewDoc(item.html); }, 60);
   }
 
   function closeForm() {
@@ -297,9 +305,86 @@
     detailDesc.textContent = item.desc || 'No description.';
     detailMeta.textContent = `${store.TYPES[item.type] || 'Element'} · ${item.fileName}`
       + (item.author ? ` · from ${item.author}` : '');
-    detailPreview.srcdoc = previewDoc(item.html);
     insertButton.textContent = item.type === 'page' ? 'Insert Page' : 'Insert Element';
+    renderShareToggle(item);
     showView('detail');
+    // Assign srcdoc only after the view is on screen. Saved items often embed
+    // a Canvas file with loading="lazy"; an iframe created inside a hidden,
+    // transformed subtree never intersects the viewport, so its load is
+    // deferred and does not reliably fire once the subtree is shown. Setting
+    // it while visible is what makes Team Stuff's identical preview work.
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => { detailPreview.srcdoc = previewDoc(item.html); }, 60);
+  }
+
+  // ---- File sharing ------------------------------------------------------
+  // An item shared to the team repo is pushed as the connected GitHub user.
+  // Turning sharing off rewrites the file as hidden rather than deleting it,
+  // which is what the team agreed to.
+  async function renderShareToggle(item) {
+    if (!shareToggle) return;
+    const team = window.CCBETeamStuff;
+    if (!team) { shareToggle.hidden = true; return; }
+
+    shareToggle.hidden = false;
+    shareToggle.disabled = true;
+    shareToggle.textContent = 'Checking…';
+
+    const token = await team.getToken();
+    if (!token) {
+      shareToggle.textContent = 'Connect GitHub to share';
+      shareToggle.setAttribute('aria-pressed', 'false');
+      shareToggle.disabled = false;
+      shareToggle.dataset.action = 'connect';
+      shareNote.textContent = 'Team Stuff needs a GitHub token before you can share. Open Team Stuff, then Connection settings.';
+      return;
+    }
+
+    const shared = (await team.getSharedIds()).has(item.id);
+    shareToggle.dataset.action = shared ? 'unshare' : 'share';
+    shareToggle.textContent = shared ? 'Shared with the team' : 'Share with the team';
+    shareToggle.setAttribute('aria-pressed', String(shared));
+    shareToggle.disabled = false;
+    shareNote.textContent = shared
+      ? 'Live in the team folder. Turning this off hides it from Team Stuff; the file stays in the repo.'
+      : "Puts a copy in the team's GitHub folder. That repo is public, so treat anything you share as readable by anyone.";
+  }
+
+  async function handleShareToggle() {
+    const item = selectedItem();
+    const team = window.CCBETeamStuff;
+    if (!item || !team) return;
+
+    if (shareToggle.dataset.action === 'connect') {
+      notify('Open Team Stuff, then Connection settings, to add your GitHub token.', false);
+      return;
+    }
+
+    const unsharing = shareToggle.dataset.action === 'unshare';
+    shareToggle.disabled = true;
+    shareToggle.textContent = unsharing ? 'Hiding…' : 'Sharing…';
+    try {
+      const author = (await store.getAuthorName()) || (await team.getUser());
+      if (unsharing) {
+        // unshareItem reports hidden:false when it cannot find the file, which
+        // used to be announced as success.
+        const result = await team.unshareItem(item, author);
+        notify(
+          result.hidden
+            ? `${item.title} is no longer listed in Team Stuff.`
+            : `Could not find ${item.title} in the team folder, so nothing changed.`,
+          !result.hidden
+        );
+      } else {
+        await team.shareItem(item, author);
+        notify(`${item.title} shared with the team.`, false);
+      }
+      if (window.CCBETeamStuffUI) window.CCBETeamStuffUI.reload();
+    } catch (error) {
+      notify(`Sharing failed: ${error && error.message ? error.message : error}`, true);
+    } finally {
+      await renderShareToggle(item);
+    }
   }
 
   function selectedItem() {
@@ -332,6 +417,19 @@
     }
     removeButton.disabled = true;
     try {
+      // Removing an item locally used to leave its shared copy live in the
+      // team folder forever. Take it out of Team Stuff first, while we still
+      // have the item's details; a failure here must not block the removal.
+      const team = window.CCBETeamStuff;
+      if (team && (await team.getToken())) {
+        try {
+          const author = (await store.getAuthorName()) || (await team.getUser());
+          await team.unshareItem(item, author);
+          if (window.CCBETeamStuffUI) window.CCBETeamStuffUI.reload();
+        } catch (error) {
+          notify(`Removed locally, but it is still shared in Team Stuff: ${error && error.message ? error.message : error}`, true);
+        }
+      }
       const result = await store.removeItem(item.id);
       selectedId = null;
       await refresh();
@@ -350,7 +448,7 @@
   }
 
   // ---- Wire up -----------------------------------------------------------
-  // Opens the Team sharing controls in the popup's own folder view.
+  // Opens the File sharing controls in the popup's own folder view.
   $('myStuffSharingButton').addEventListener('click', openSharing);
 
   $('myStuffAddButton').addEventListener('click', openAddForm);
@@ -370,6 +468,7 @@
   insertButton.addEventListener('click', handleInsert);
   copyButton.addEventListener('click', handleCopy);
   removeButton.addEventListener('click', handleRemove);
+  if (shareToggle) shareToggle.addEventListener('click', handleShareToggle);
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;

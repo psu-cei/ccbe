@@ -46,9 +46,10 @@
   <main>
     <div class="panel-controls cei-tab-navigation" role="tablist" aria-label="Style guide panels">
       <button class="panel-tab my-stuff-tab" type="button" role="tab" aria-selected="false" data-panel="4">My Stuff</button>
+      <button class="panel-tab team-stuff-tab" type="button" role="tab" aria-selected="false" data-panel="5">Team Stuff</button>
       <button class="panel-tab is-active" type="button" role="tab" aria-selected="false" data-panel="1">Layouts</button>
       <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="2">Elements</button>
-      <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="3">Asset Library</button>
+      <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="3">Assets</button>
       <button class="panel-tab" type="button" role="tab" aria-selected="false" data-panel="0">Search</button>
     </div>
 
@@ -450,7 +451,7 @@
             </div>
           </div>
         </section>
-        <section class="style-panel" aria-label="Asset Library examples">
+        <section class="style-panel" aria-label="Assets">
           <div class="asset-library-builder">
             <p class="asset-builder-desc">Choose color, then insert</p>
 
@@ -647,7 +648,7 @@
             <div class="layout-options-card">
               <div class="ms-form-head">
                 <h2 id="myStuffFormHeading">Add to My Stuff</h2>
-                <button id="myStuffSharingButton" class="options-copy-button" type="button">Team Sharing</button>
+                <button id="myStuffSharingButton" class="options-copy-button" type="button">File sharing</button>
               </div>
               <p id="myStuffFormIntro">Only you can see these. They're saved in your Chrome profile (and your my-stuff folder, if connected).</p>
               <form id="myStuffForm" novalidate>
@@ -702,12 +703,16 @@
                 <button id="myStuffCopyButton" class="options-copy-button" type="button">Copy HTML</button>
                 <button id="myStuffRemoveButton" class="options-copy-button ms-remove-button" type="button">Remove</button>
               </div>
+              <div class="ms-share-toggle-row">
+                <button id="myStuffShareToggle" class="ms-share-toggle" type="button" aria-pressed="false">Share with the team</button>
+                <p id="myStuffShareNote" class="ms-share-note">Puts a copy in the team's GitHub folder. That repo is public, so treat anything you share as readable by anyone.</p>
+              </div>
             </div>
           </div>
           <div id="myStuffSharingView" class="layout-options-view" hidden>
             <button id="myStuffSharingBack" class="layout-back-button" type="button">← Back to My Stuff</button>
             <div class="layout-options-card">
-              <h2>Team sharing</h2>
+              <h2>File Sharing</h2>
               <div id="myStuffSharingSettings"></div>
             </div>
           </div>
@@ -718,6 +723,82 @@
               <h2>My Stuff folder</h2>
               <div id="myStuffFolderSettings"></div>
               <p class="ms-folder-note">Folder picker not opening? <a href="#" id="myStuffFolderTabLink">Open folder settings in a tab</a>.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="style-panel team-stuff-panel" aria-label="Team Stuff">
+          <div id="teamStuffMainView">
+            <div class="ts-status" id="teamStuffStatus">
+              <span id="teamStuffStatusText">Checking the team folder…</span>
+              <button id="teamStuffSettingsButton" class="ms-link-button" type="button">Connection settings</button>
+            </div>
+            <div class="ms-filters">
+              <div class="panel-search">
+                <label for="teamStuffSearch">Search</label>
+                <input id="teamStuffSearch" class="card-search" type="search" placeholder="Search team stuff...">
+              </div>
+              <div class="layout-category-control">
+                <label for="teamStuffAuthorFilter">Shared by</label>
+                <select id="teamStuffAuthorFilter" class="layout-category-select">
+                  <option value="all" selected>Everyone</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="layout-view-control">
+              <span class="layout-view-label" id="teamStuffViewLabel">View</span>
+              <div class="layout-view-toggle" role="radiogroup" aria-labelledby="teamStuffViewLabel">
+                <button type="button" class="layout-view-button is-selected" data-layout-view="grid" role="radio" aria-checked="true">Grid</button>
+                <button type="button" class="layout-view-button" data-layout-view="list" role="radio" aria-checked="false">List</button>
+              </div>
+            </div>
+            <div class="layout-grid" id="teamStuffGrid"></div>
+            <div class="ms-empty" id="teamStuffEmpty" hidden>
+              <h2>Nothing shared yet</h2>
+              <p>When a teammate turns on sharing for one of their saved items, it shows up here for everyone.</p>
+              <button id="teamStuffRefreshButton" class="layout-insert-button" type="button">Check again</button>
+            </div>
+          </div>
+
+          <div id="teamStuffDetailView" class="layout-options-view" hidden>
+            <button id="teamStuffDetailBack" class="layout-back-button" type="button">← Back to Team Stuff</button>
+            <div class="layout-options-card">
+              <h2 id="teamStuffDetailTitle">Item</h2>
+              <p id="teamStuffDetailDesc"></p>
+              <p id="teamStuffDetailMeta" class="ms-detail-meta"></p>
+              <div class="layout-preview-wrap">
+                <span class="layout-preview-label">Preview</span>
+                <iframe id="teamStuffDetailPreview" class="layout-preview-frame" sandbox="allow-scripts allow-forms allow-popups" title="Team Stuff item preview"></iframe>
+              </div>
+              <div class="options-insert-row">
+                <button id="teamStuffInsertButton" class="layout-insert-button" type="button">Insert</button>
+                <button id="teamStuffCopyButton" class="options-copy-button" type="button">Copy HTML</button>
+                <button id="teamStuffSaveButton" class="options-copy-button" type="button">Save to My Stuff</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="teamStuffSettingsView" class="layout-options-view" hidden>
+            <button id="teamStuffSettingsBack" class="layout-back-button" type="button">← Back to Team Stuff</button>
+            <div class="layout-options-card">
+              <h2>Team Stuff connection</h2>
+              <p class="ms-folder-intro">Team Stuff reads the <code>assets/shared</code> folder in <strong id="teamStuffRepoName">psu-cei/ccbe</strong>. Reading works without signing in. To share your own items you need a GitHub token with write access to that repo.</p>
+              <div class="ms-folder-status ms-folder-status-large" id="teamStuffConnState"><span id="teamStuffConnText">Checking…</span></div>
+
+              <label class="ms-share-label" for="teamStuffToken">Your GitHub token</label>
+              <div class="ms-share-row">
+                <input id="teamStuffToken" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+                <button id="teamStuffConnect" class="layout-insert-button" type="button">Connect</button>
+              </div>
+              <p class="ms-share-note">Create a fine-grained token on <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub's token page</a>: set Resource owner to <strong>psu-cei</strong>, select only the <strong>ccbe</strong> repository, and give it <strong>Contents: Read and write</strong>. The token is stored in your own Chrome profile and never leaves this machine except to talk to GitHub.</p>
+
+              <div class="ms-folder-actions">
+                <button id="teamStuffDisconnect" class="options-copy-button ms-danger" type="button" hidden>Disconnect</button>
+                <button id="teamStuffOpenFolder" class="options-copy-button" type="button">Open the folder on GitHub</button>
+              </div>
+              <p id="teamStuffConnMessage" class="ms-folder-message" role="status" aria-live="polite"></p>
+              <p class="ms-folder-note">Heads up: <strong>psu-cei/ccbe is a public repository</strong>. Anything shared to Team Stuff can be read by anyone on the internet, not only the CEI team.</p>
             </div>
           </div>
         </section>
@@ -734,5 +815,7 @@
   <script src="my-stuff-store.js"></script>
   <script src="my-stuff-folder.js"></script>
   <script src="my-stuff.js"></script>
+  <script src="team-stuff-store.js"></script>
+  <script src="team-stuff.js"></script>
 </body>
 </html>
